@@ -7,7 +7,6 @@
  *
  * Return: the results of the operation.
  */
-
 int op_add(int a, int b)
 {
 	return (a + b);
@@ -42,3 +41,10 @@ int op_sub(int a, int b)
  *
  * Return: the results of the operation, -1 if a or b == 0
  */
+int op_div(int a, int b)
+{
+	if (a && b)
+		return (a / b);
+	else
+		return (-1);
+}
