@@ -31,7 +31,10 @@ int op_add(int a, int b)
  * Return: the results of the operation.
  */
 
-/*Place code for multiplication here*/
+int op_mul(int a, int b)
+{
+	return (a * b);
+}
 
 /**
  * op_div - divides a by b
