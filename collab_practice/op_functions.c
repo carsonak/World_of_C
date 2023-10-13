@@ -8,11 +8,6 @@
  * Return: the results of the operation.
  */
 
-int op_add(int a, int b)
-{
-	return (a + b);
-}
-
 /**
  * op_sub - subtracts a from b
  * @a: first integer
