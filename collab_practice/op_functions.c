@@ -8,6 +8,8 @@
  * Return: the results of the operation.
  */
 
+/*Place code for addition here*/
+
 /**
  * op_sub - subtracts a from b
  * @a: first integer
@@ -15,10 +17,8 @@
  *
  * Return: the results of the operation.
  */
-int op_sub(int a, int b)
-{
-	return (a - b);
-}
+
+/*Place code for subtraction here*/
 
 /**
  * op_mul - multiplies a by b
@@ -37,5 +37,3 @@ int op_sub(int a, int b)
  *
  * Return: the results of the operation, -1 if a or b == 0
  */
-
-/*Place code for division here*/
