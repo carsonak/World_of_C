@@ -8,7 +8,10 @@
  * Return: the results of the operation.
  */
 
-/*Place code for addition here*/
+int op_add(int a, int b)
+{
+	return (a + b);
+}
 
 /**
  * op_sub - subtracts a from b
