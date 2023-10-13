@@ -17,8 +17,10 @@
  *
  * Return: the results of the operation.
  */
-
-/*Place code for subtraction here*/
+int op_sub(int a, int b)
+{
+	return (a - b);
+}
 
 /**
  * op_mul - multiplies a by b
