@@ -3,6 +3,7 @@
 unsigned int set_bit(unsigned int num, unsigned int bit);
 void print_binary(unsigned int num, unsigned int spc);
 
+/**/
 unsigned int set_bit(unsigned int num, unsigned int index)
 {
 	if (index < 32)
@@ -13,6 +14,7 @@ unsigned int set_bit(unsigned int num, unsigned int index)
 	return (num);
 }
 
+/**/
 void print_binary(unsigned int num, unsigned int spc)
 {
 	if (num == 0)
@@ -27,6 +29,7 @@ void print_binary(unsigned int num, unsigned int spc)
 	
 }
 
+/**/
 int main(void)
 {
 	unsigned int num = 341, num2 = 0, idx = 40;
