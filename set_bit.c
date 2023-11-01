@@ -1,83 +1,113 @@
 #include <stdio.h>
 
 unsigned int set_bit(unsigned int num, unsigned int bit);
-int print_binary(unsigned int num, int spc);
+void print_binary(unsigned int num);
+void prt_bi(unsigned int num, int *spc);
 
-/**/
-unsigned int set_bit(unsigned int num, unsigned int index) {
-  if (index < 32)
-    return (num | (1 << index));
-  else
-    printf("Invalid index\n");
-
-  return (num);
-}
-
-/**/
-int print_binary(unsigned int num, int spc)
+/**
+ * set_bit - sets the value of a bit in an int at the given index
+ * @num: the usigned int to be modified
+ * @index: the index of the bit to be set
+ *
+ * Return: the new value of num
+ */
+unsigned int set_bit(unsigned int num, unsigned int index)
 {
-  if (num == 0)
-    return (1);
+	if (index >= 32)
+		printf("Invalid index\n");
+	else
+		return (num | (1 << index));
 
-  spc = print_binary(num >> 1, spc);
-
-  spc += 1;
-  printf("%d", num & 1);
-  if (!(spc % 4) && (spc > 4))
-    putchar(' ');
-
-	return (spc);
+	return (num);
 }
 
-/**/
-int main(void) {
-  unsigned int num = 12, num2 = 0, idx = 40;
+/**
+ * prt_bi - prints an int in binary and adds spacing for readability
+ * @num: unsigned int to be converted
+ * @spc: address of the tracker for the spacing
+ */
+void prt_bi(unsigned int num, int *spc)
+{
+	if (num == 0)
+		return;
 
-  printf("Before = %u [", num);
-  print_binary(num, 1);
-  printf("]\n");
-  num2 = set_bit(num, idx);
-  printf("%u set at %u = %u [", num, idx, num2);
-  print_binary(num2, 1);
-  printf("]\n\n");
+	prt_bi(num >> 1, spc);
 
-  idx = 6;
-  printf("Before = %u [", num);
-  print_binary(num, 1);
-  printf("]\n");
-  num2 = set_bit(num, idx);
-  printf("%u set at %u = %u [", num, idx, num2);
-  print_binary(num2, 1);
-  printf("]\n\n");
+	printf("%d", num & 1);
+	if (*spc % 4 == 0)
+		putchar(' ');
 
-  idx = -1;
-  printf("Before = %u [", num);
-  print_binary(num, 1);
-  printf("]\n");
-  num2 = set_bit(num, idx);
-  printf("%u set at %u = %u [", num, idx, num2);
-  print_binary(num2, 1);
-  printf("]\n\n");
+	(*spc)++;
+}
 
-  idx = 6;
-  num = 0;
-  printf("Before = %u [", num);
-  print_binary(num, 1);
-  printf("]\n");
-  num2 = set_bit(num, idx);
-  printf("%u set at %u = %u [", num, idx, num2);
-  print_binary(num2, 1);
-  printf("]\n\n");
+/**
+ * print_binary - calls the helper function prt_bi to print in binary
+ * @num: unsigned int to be printed
+ */
+void print_binary(unsigned int num)
+{
+	int spacer = 1;
 
-  idx = 9;
-  num = 236;
-  printf("Before = %u [", num);
-  print_binary(num, 1);
-  printf("]\n");
-  num2 = set_bit(num, idx);
-  printf("%u set at %u = %u [", num, idx, num2);
-  print_binary(num2, 1);
-  printf("]\n\n");
+	if (num > 0)
+		prt_bi(num, &spacer);
+	else
+		putchar('0');
+}
 
-  return (0);
+/**
+ * main - entry point
+ *
+ * Return: ALways 0
+ */
+int main(void)
+{
+	unsigned int num = 12, num2 = 0, idx = 40;
+
+	printf("Before = %u [", num);
+	print_binary(num);
+	printf("]\n");
+	num2 = set_bit(num, idx);
+	printf("%u set at %u = %u [", num, idx, num2);
+	print_binary(num2);
+	printf("]\n\n");
+
+	idx = 6;
+	printf("Before = %u [", num);
+	print_binary(num);
+	printf("]\n");
+	num2 = set_bit(num, idx);
+	printf("%u set at %u = %u [", num, idx, num2);
+	print_binary(num2);
+	printf("]\n\n");
+
+	idx = -1;
+	printf("Before = %u [", num);
+	print_binary(num);
+	printf("]\n");
+	num2 = set_bit(num, idx);
+	printf("%u set at %u = %u [", num, idx, num2);
+	print_binary(num2);
+	printf("]\n\n");
+
+	idx = 6;
+	num = 0;
+	printf("Before = %u [", num);
+	print_binary(num);
+	printf("]\n");
+	num2 = set_bit(num, idx);
+	printf("%u set at %u = %u [", num, idx, num2);
+	print_binary(num2);
+	printf("]\n\n");
+
+	idx = 9;
+	num = 236;
+	printf("Before = %u [", num);
+	print_binary(num);
+	printf("]\n");
+	num2 = set_bit(num, idx);
+	printf("%u set at %u = %u [", num, idx, num2);
+	print_binary(num2);
+	printf("]\n\n");
+
+	return (0);
 }
