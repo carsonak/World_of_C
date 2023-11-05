@@ -1,1 +1,1 @@
-### A Practice Repo For C Projects
+### A Practice Repo For C Practice

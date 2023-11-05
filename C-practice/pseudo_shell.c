@@ -31,56 +31,64 @@ int main(void)
 		perror("Couldn't fork");
 	else if (frk1 == 0)
 	{
-		fd = open("child_env.txt", O_CREAT, O_RDWR, O_TRUNC, __O_CLOEXEC);
+		fd = creat("child_env.txt", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if (fd == -1)
-			perror("Failed to open file");
+			perror("\nFailed to open file");
 		else
 		{
-			printf("fd = %d\n", fd);
 			for (i = 0; nwwenviron[i]; i++)
 			{
 				err = write(fd, nwwenviron[i], (sizeof(**nwwenviron) * strlen(nwwenviron[i])));
 				if (err == -1)
 				{
-					perror("Failed to write to file");
+					perror("\nFailed to write to file");
 					break;
 				}
 				else
 					write(fd, "\n", sizeof(**nwwenviron));
 			}
+
+			err = close(fd);
+			if (err == -1)
+				perror("\nFailed to close file");
+			else
+				printf("File \"child_env.txt\" has been created and child enviroment variables saved.\n");
 		}
 
 		err = execve(argv[0], argv, nwwenviron);
 		if (err == -1)
 		{
 			close(fd);
-			perror("Couldn't execute");
+			perror("\nCouldn't execute");
 		}
 	}
 	else
 	{
 		frkerr = wait(&status);
 		if (frkerr == -1)
-			perror("Wait error");
+			perror("\nWait error");
 
-		fd = open("parent_env.txt", O_CREAT, O_RDWR, O_TRUNC, __O_CLOEXEC);
+		fd = creat("parent_env.txt", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if (fd == -1)
-			perror("Failed to open file");
+			perror("\nFailed to open file");
 		else
 		{
-			printf("fd = %d\n", fd);
 			for (i = 0; nwwenviron[i]; i++)
 			{
 				err = write(fd, nwwenviron[i], (sizeof(**nwwenviron) * strlen(nwwenviron[i])));
 				if (err == -1)
 				{
-					perror("Failed to write to file");
+					perror("\nFailed to write to file");
 					break;
 				}
 				else
 					write(fd, "\n", sizeof(**nwwenviron));
 			}
-			close(fd);
+			err = close(fd);
+			if (err == -1)
+				perror("\nFailed to close file");
+			else
+				printf("File \"parent_env.txt\" has been created and parent enviroment variables saved.\n");
 		}
 	}
 
