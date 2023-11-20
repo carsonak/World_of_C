@@ -14,61 +14,60 @@
  */
 int main(void)
 {
-	// char *line = NULL;
-	char buffer[100];
-	// size_t len = 0;
+	char *line = NULL;
+	// char buffer[100];
+	size_t len = 0;
 	ssize_t nread;
-	int fd = STDIN_FILENO;
+	// int fd = STDIN_FILENO;
 	FILE *fs = stdin;
 	// char line[100] = {'H', 'e', 'l', 'l', 'o', '\n', '\0', 4};
 
 	errno = 0;
-	fd = open("test.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	// fd = open("test.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	// if (fd != -1)
 	// 	write(fd, line, 8);
 	// else
 	// {
 	// 	fwrite(strerror(errno), strlen(strerror(errno)), sizeof(char), stderr);
-	// 	exit(EXIT_FAILURE);
+	// 	return (EXIT_FAILURE);
 	// }
+	fs = fopen("test", "w+");
+	if (!fs)
+	{
+		fwrite(strerror(errno), strlen(strerror(errno)), sizeof(char), stderr);
+		return (EXIT_FAILURE);
+	}
 
-	// nread = getline(&line, &len, stdin);
-	nread = read(fd, buffer, 100);
+	nread = getline(&line, &len, stdin);
+	// nread = read(fd, buffer, 100);
 	while (nread > 0)
 	{
-		printf("[%ld]: ", nread);
-		// fwrite(line, nread, sizeof(char), stdout);
-		fwrite(buffer, nread, sizeof(char), stdout);
-		// free(line);
-		// len = 0;
-		errno = 0;
-		// nread = getline(&line, &len, stdin);
-		nread = read(fd, buffer, 100);
+		// printf("[%ld]: ", nread);
+		fwrite(line, nread, sizeof(char), fs);
+		// fwrite(buffer, nread, sizeof(char), stdout);
+		free(line);
+		len = 0;
+		nread = getline(&line, &len, stdin);
+		// nread = read(fd, buffer, 100);
 	}
 
 	if (nread == -1 && errno)
 	{
 		fwrite(strerror(errno), strlen(strerror(errno)), sizeof(char), stderr);
-		close(fd);
+		fclose(fs);
+		// close(fd);
 		exit(EXIT_FAILURE);
 	}
 	else if (nread < 1 && !errno)
 	{
-		// fs = fopen("test.txt", "r");
-		if (fs)
-		{
-			if (feof(fs) || !nread)
-				printf("EOF [%ld]\n", nread);
-			else
-				printf("NO EOF\n");
-
-			// fclose(fs);
-		}
+		if (feof(stdin) || !nread)
+			printf("EOF [%ld]\n", nread);
 		else
-			printf("Couldn't open stream for test.txt\n");
+			printf("NO EOF\n");
 	}
 
-	close(fd);
+	fclose(fs);
+	// close(fd);
 	exit(EXIT_SUCCESS);
 }
 
