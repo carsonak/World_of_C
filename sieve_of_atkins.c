@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	sieb[2 / 8] |= (1 << (2 % 8));
 	sieb[3 / 8] |= (1 << (3 % 8));
 	sieb[5 / 8] |= (1 << (5 % 8));
-	printf("Primes in range %ld:\n", limit);
+	/*printf("Primes in range %ld:\n", limit);*/
 	for (i = 0, count = 0; i <= limit; i++)
 	{
 		if (sieb[i / 8] & (1 << (i % 8)))
