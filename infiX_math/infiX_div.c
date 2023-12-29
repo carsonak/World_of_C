@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **remainder);
+uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem);
 uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
 uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2);
 uint8_t *infiX_add(uint8_t *n1, uint8_t *n2);
@@ -20,9 +20,9 @@ void *memfill(void *mem, char b, size_t start, size_t nbytes);
  *
  * Return: 0 on success, 1 on error
  */
-int main(int argc, uint8_t *argv[])
+int main(int argc, char *argv[])
 {
-	uint8_t *rem = calloc(100, sizeof(*rem));
+	uint8_t *remainder = calloc(100, sizeof(*remainder)), *answer = NULL;
 
 	if (argc != 3)
 	{
@@ -34,8 +34,18 @@ int main(int argc, uint8_t *argv[])
 		fprintf(stderr, "Insufficient digits to divide\n");
 		return (EXIT_FAILURE);
 	}
+	else if (!remainder)
+	{
+		perror("Malloc fail");
+		return (EXIT_FAILURE);
+	}
 
-	infiX_div((uint8_t *)argv[1], (uint8_t *)argv[2], &rem);
+	answer = infiX_div((uint8_t *)argv[1], (uint8_t *)argv[2], &remainder);
+	printf("%s / %s = %s\n", (char *)argv[1], (char *)argv[2], (char *)answer);
+	if (answer)
+		free(answer);
+
+	free(remainder);
 	return (EXIT_SUCCESS);
 }
 
@@ -43,23 +53,36 @@ int main(int argc, uint8_t *argv[])
  * infiX_div - divides
  * @dividend: d
  * @divisor: d
- * @remainder: r
+ * @rem: r
  *
  * Return: string with the results, NULL on failure
  */
-uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **remainder)
+uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 {
-	size_t len_end = strlen(dividend), len_sor = strlen(divisor), i = 0;
-	int len_q = 0, ds = 0, de = 0;
-	uint8_t *quotient = NULL, *temp = NULL, calcs = NULL;
+	size_t len_dend = strlen((char *)dividend), len_sor = strlen((char *)divisor);
+	size_t i = 0, len_q = 0;
+	uint8_t *quotient = NULL, *temp = NULL;
 
-	if (len_end < len_sor || !len_sor)
+	if (len_dend < len_sor || !len_sor)
 	{
-		*remainder = strcpy((char *)(*remainder), (char *)dividend);
+		*rem = (uint8_t *)strcpy((char *)(*rem), (char *)dividend);
 		return (NULL);
 	}
+	else if (len_sor == 1)
+	{
+		if (divisor[0] == '0')
+			return (NULL);
+	}
+	else if (len_dend == 1)
+	{
+		if (dividend[0] == '0')
+		{
+			*rem = (uint8_t *)strcpy((char *)(*rem), (char *)dividend);
+			return (NULL);
+		}
+	}
 
-	len_q = (len_end - len_sor) + 1;
+	len_q = (len_dend - len_sor) + 1;
 	quotient = calloc(len_q + 1, sizeof(*quotient));
 	if (!quotient)
 	{
@@ -67,32 +90,30 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **remainder)
 		return (NULL);
 	}
 
-	(*remainder) = strncpy((char *)(*remainder), dividend, len_sor + i);
-	for (i = 0; i < (len_end - len_sor); i++)
+	(*rem) = (uint8_t *)strncpy((char *)(*rem), (char *)dividend, len_sor + i);
+	for (i = 0; i < (len_dend - len_sor); i++)
 	{
-		if ((*remainder)[0] < divisor[0])
+		if ((*rem)[0] <= divisor[0])
 		{
-			if ((i + 1) < (len_end - len_sor))
-				(*remainder)[strlen((*remainder))] = dividend[len_sor + i];
-			else
+			if (++i > (len_dend - len_sor))
 				continue;
+
+			(*rem)[strlen((char *)(*rem))] = dividend[(len_sor - 1) + i];
 		}
 
-		if (strlen((char *)(*remainder)) > strlen(divisor))
-		{
-			calcs = ((((((*remainder)[0] - '0') * 10) + ((*remainder)[1] - '0'))) / (divisor[0] - '0') + '0');
-			temp = infiX_mul(divisor, &calcs);
-		}
+		if (strlen((char *)(*rem)) > strlen((char *)divisor))
+			quotient[i] = ((((((*rem)[0] - '0') * 10) + ((*rem)[1] - '0'))) / (divisor[0] - '0') + '0');
 		else
-		{
-			calcs = ((*remainder)[1] - '0') / (divisor[0] - '0') + '0';
-			temp = infiX_mul(divisor, &calcs);
-		}
+			quotient[i] = ((*rem)[1] - '0') / (divisor[0] - '0') + '0';
 
+		temp = infiX_mul(divisor, &quotient[i]);
 		if (temp)
-			(*remainder) = infiX_sub((*remainder), temp);
+			(*rem) = infiX_sub((*rem), temp);
 		else
 			return (NULL);
+
+		free(temp);
+		temp = NULL;
 	}
 
 	return (quotient);
