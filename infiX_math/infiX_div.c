@@ -11,7 +11,7 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 {
 	size_t len_dend = strlen((char *)dividend), len_sor = strlen((char *)divisor);
 	size_t i = 0, len_q = 0, len_rem = 0, byte_sor = 0, byte_dend = 0;
-	uint8_t *quotient = NULL, *temp = NULL;
+	uint8_t *quotient = NULL, *temp = NULL, *prev = NULL;
 
 	if (len_dend < len_sor || !len_sor)
 	{
@@ -73,7 +73,11 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 
 		temp = infiX_mul(divisor, &quotient[i]);
 		if (temp)
-			strcpy((char *)remain, (char *)infiX_sub(remain, temp));
+		{
+			prev = remain;
+			remain = infiX_sub(remain, temp);
+			free(prev);
+		}
 		else
 			return (NULL);
 
