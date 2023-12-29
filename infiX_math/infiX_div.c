@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 {
 	size_t len_dend = strlen((char *)dividend), len_sor = strlen((char *)divisor);
-	size_t i = 0, len_q = 0;
+	size_t i = 0, len_q = 0, len_rem = 0;
 	uint8_t *quotient = NULL, *temp = NULL;
 
 	if (len_dend < len_sor || !len_sor)
@@ -91,20 +91,29 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 	}
 
 	(*rem) = (uint8_t *)strncpy((char *)(*rem), (char *)dividend, len_sor + i);
-	for (i = 0; i < (len_dend - len_sor); i++)
+	for (i = 0; i <= (len_dend - len_sor); i++)
 	{
-		if ((*rem)[0] <= divisor[0])
+		len_rem = strlen((char *)(*rem));
+		if ((*rem)[0] < divisor[0])
 		{
-			if (++i > (len_dend - len_sor))
-				continue;
-
-			(*rem)[strlen((char *)(*rem))] = dividend[(len_sor - 1) + i];
+			(*rem)[len_rem] = dividend[(len_sor - 1) + (i + 1)];
+			(*rem)[++len_rem] = '\0';
 		}
 
-		if (strlen((char *)(*rem)) > strlen((char *)divisor))
+		if (len_rem > len_sor)
 			quotient[i] = ((((((*rem)[0] - '0') * 10) + ((*rem)[1] - '0'))) / (divisor[0] - '0') + '0');
+		else if (len_rem == len_sor)
+		{
+			/*Check which is the bigger number*/
+			/*strncmp?*/
+			if ((*rem)[0] > divisor[0])
+				quotient[i] = ((*rem)[0] - '0') / (divisor[0] - '0') + '0';
+		}
 		else
-			quotient[i] = ((*rem)[1] - '0') / (divisor[0] - '0') + '0';
+		{
+			quotient[i] = '0';
+			continue;
+		}
 
 		temp = infiX_mul(divisor, &quotient[i]);
 		if (temp)
