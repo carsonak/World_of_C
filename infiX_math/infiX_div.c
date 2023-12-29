@@ -15,7 +15,7 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 
 	if (len_dend < len_sor || !len_sor)
 	{
-		remain = (uint8_t *)strcpy((char *)(remain), (char *)dividend);
+		strcpy((char *)remain, (char *)dividend);
 		return (NULL);
 	}
 	else if (len_sor == 1)
@@ -27,43 +27,44 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 	{
 		if (dividend[0] == '0')
 		{
-			remain = (uint8_t *)strcpy((char *)(remain), (char *)dividend);
+			strcpy((char *)remain, (char *)dividend);
 			return (NULL);
 		}
 	}
 
 	len_q = (len_dend - len_sor) + 1;
-	quotient = calloc(len_q + 1, sizeof(*quotient));
+	quotient = calloc(len_q + 2, sizeof(*quotient));
 	if (!quotient)
 	{
 		perror("Malloc fail");
 		return (NULL);
 	}
 
-	(remain) = (uint8_t *)strncpy((char *)(remain), (char *)dividend, len_sor + i);
-	for (i = 0; i <= (len_dend - len_sor); i++)
+	strncpy((char *)remain, (char *)dividend, len_sor);
+	for (i = 0; i < len_q; i++)
 	{
-		len_rem = strlen((char *)(remain));
-		if ((remain)[0] < divisor[0] || quotient[i - 1] == '0')
+		len_rem = strlen((char *)remain);
+		if (i > 0 && quotient[i - 1] == '0')
 		{
-			(remain)[len_rem] = dividend[(len_sor - 1) + (i + 1)];
-			(remain)[++len_rem] = '\0';
+			remain[(len_rem - 1) + i] = dividend[(len_sor - 1) + i];
+			len_rem += i;
+			remain[len_rem] = '\0';
 		}
 
 		if (len_rem > len_sor)
 		{
-			byte_dend = strtonl((char *)(remain), 2);
+			byte_dend = strtonl((char *)remain, 2);
 			byte_sor = strtonl((char *)divisor, 1);
 			quotient[i] = (byte_dend / byte_sor) + '0';
 			if (quotient[i] > '9')
 			{
-				byte_dend = strtonl((char *)(remain), 3);
+				byte_dend = strtonl((char *)remain, 3);
 				byte_sor = strtonl((char *)divisor, 2);
 				quotient[i] = (byte_dend / byte_sor) + '0';
 			}
 		}
-		else if (len_rem == len_sor && strncmp((char *)(remain), (char *)divisor, len_sor) >= 0)
-			quotient[i] = ((remain)[0] - '0') / (divisor[0] - '0') + '0';
+		else if (len_rem == len_sor && strncmp((char *)remain, (char *)divisor, len_sor) >= 0)
+			quotient[i] = (remain[0] - '0') / (divisor[0] - '0') + '0';
 		else
 		{
 			quotient[i] = '0';
@@ -72,7 +73,7 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 
 		temp = infiX_mul(divisor, &quotient[i]);
 		if (temp)
-			(remain) = infiX_sub((remain), temp);
+			strcpy((char *)remain, (char *)infiX_sub(remain, temp));
 		else
 			return (NULL);
 

@@ -24,7 +24,7 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 			continue;
 
 		c_dgt = top + (botm - b);
-		c_mul = calloc((c_dgt + 1), sizeof(*c_mul));
+		c_mul = calloc((c_dgt + 2), sizeof(*c_mul));
 		if (!c_mul)
 			return (NULL);
 
@@ -52,7 +52,7 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 
 	if (!prod)
 	{
-		prod = calloc(2, sizeof(*prod));
+		prod = calloc(3, sizeof(*prod));
 		prod[0] = '0';
 	}
 

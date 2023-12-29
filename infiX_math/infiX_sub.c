@@ -32,12 +32,11 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
 		}
 	}
 
-	res = malloc(sizeof(*res) * ((++res_i) + 2));
+	res = calloc(((++res_i) + 3), sizeof(*res));
 	if (!res)
 		return (NULL);
 
-	res[res_i + 1] = '\0';
-	if (a < b || (a == b && n1[diff] < n2[diff]))
+	if (a < b || (a == b && n1[diff] && n1[diff] < n2[diff]))
 		res[0] = '-';
 	else
 		res[0] = '0';

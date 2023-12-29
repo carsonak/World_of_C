@@ -11,6 +11,7 @@ uint8_t *remain;
  */
 int main(int argc, char *argv[])
 {
+	errno = 0;
 	if (argc != 4 || strlen(argv[2]) != 1)
 	{
 		print_help(argv[0]);
@@ -19,6 +20,13 @@ int main(int argc, char *argv[])
 	else if (!isdigit(argv[1][0]) || !isdigit(argv[3][0]))
 	{
 		fprintf(stderr, "Insufficient digits\n");
+		return (EXIT_FAILURE);
+	}
+
+	remain = calloc(sizeof(*remain), 150);
+	if (!remain)
+	{
+		perror("Malloc fail");
 		return (EXIT_FAILURE);
 	}
 
@@ -46,14 +54,6 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 		{NULL, NULL},
 	};
 
-	errno = 0;
-	remain = calloc(sizeof(*remain), 150);
-	if (!remain)
-	{
-		perror("Malloc fail");
-		return (EXIT_FAILURE);
-	}
-
 	for (i = 0; ops[i].sign; i++)
 	{
 		if (ops[i].sign[0] == sign[0])
@@ -67,6 +67,7 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 	{
 		off_set = pad_char((char *)answer, "0");
 		printf("%s %s %s = %s\n", (char *)num1, sign, (char *)num2, (char *)(&answer[off_set]));
+		free(remain);
 		free(answer);
 		return (EXIT_SUCCESS);
 	}
@@ -75,6 +76,7 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 	else if (!answer && !ops[i].sign)
 		print_help(prog);
 
+	free(remain);
 	return (EXIT_FAILURE);
 }
 

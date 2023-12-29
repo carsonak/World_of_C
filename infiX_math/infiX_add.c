@@ -20,7 +20,7 @@ uint8_t *infiX_add(uint8_t *n1, uint8_t *n2)
 	if (sum_i < 0)
 		return (NULL);
 
-	sum = calloc(((++sum_i) + 1), sizeof(*sum));
+	sum = calloc(((++sum_i) + 2), sizeof(*sum));
 	if (!sum)
 		return (NULL);
 
