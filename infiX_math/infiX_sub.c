@@ -1,38 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <ctype.h>
-
-uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
-size_t pad_char(char *str, char *ch);
-
-/**
- * main - entry point
- * @argc: number of arguments
- * @argv: pointer to an array of strings
- *
- * Return: 0 on success, 1 on error
- */
-int main(int argc, char *argv[])
-{
-	uint8_t *rem = calloc(100, sizeof(*rem));
-
-	if (argc != 3)
-	{
-		fprintf(stderr, "USAGE: %s <num1> <num2>", argv[0]);
-		return (EXIT_FAILURE);
-	}
-	else if (!isdigit(argv[1][0]) || !isdigit(argv[2][0]))
-	{
-		fprintf(stderr, "Insufficient digits to subtract");
-		return (EXIT_FAILURE);
-	}
-
-	printf("%s - %s = %s\n", argv[1], argv[2], infiX_sub((uint8_t *)argv[1], (uint8_t *)argv[2]));
-	return (EXIT_SUCCESS);
-}
+#include "infix.h"
 
 /**
  * infiX_sub - subtracts numbers in a string
@@ -111,26 +77,4 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
 	}
 
 	return (res);
-}
-
-/**
- * pad_char - calculates length of initial padding characters in a string
- * @str: the string to check
- * @ch: the character
- *
- * Return: number of padding characters
- */
-size_t pad_char(char *str, char *ch)
-{
-	size_t zeros = 0, len = 0;
-
-	if (str)
-	{
-		len = strlen(str);
-		zeros = strspn(str, ch);
-		if (len && (zeros == len))
-			zeros--;
-	}
-
-	return (zeros);
 }

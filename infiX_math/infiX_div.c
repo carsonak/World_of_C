@@ -1,71 +1,21 @@
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <ctype.h>
-#include <errno.h>
-
-uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem);
-uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
-uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2);
-uint8_t *infiX_add(uint8_t *n1, uint8_t *n2);
-size_t pad_char(char *str, char *ch);
-void *memfill(void *mem, char b, size_t start, size_t nbytes);
-
-/**
- * main - entry point
- * @argc: number of arguments
- * @argv: pointer to an array of strings
- *
- * Return: 0 on success, 1 on error
- */
-int main(int argc, char *argv[])
-{
-	uint8_t *remainder = calloc(100, sizeof(*remainder)), *answer = NULL;
-
-	if (argc != 3)
-	{
-		fprintf(stderr, "USAGE: %s <dividend> <divisor>\n", argv[0]);
-		return (EXIT_FAILURE);
-	}
-	else if (!isdigit(argv[1][0]) || !isdigit(argv[2][0]))
-	{
-		fprintf(stderr, "Insufficient digits to divide\n");
-		return (EXIT_FAILURE);
-	}
-	else if (!remainder)
-	{
-		perror("Malloc fail");
-		return (EXIT_FAILURE);
-	}
-
-	answer = infiX_div((uint8_t *)argv[1], (uint8_t *)argv[2], &remainder);
-	printf("%s / %s = %s\n", (char *)argv[1], (char *)argv[2], (char *)answer);
-	if (answer)
-		free(answer);
-
-	free(remainder);
-	return (EXIT_SUCCESS);
-}
+#include "infix.h"
 
 /**
  * infiX_div - divides
  * @dividend: d
  * @divisor: d
- * @rem: r
  *
  * Return: string with the results, NULL on failure
  */
-uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
+uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 {
 	size_t len_dend = strlen((char *)dividend), len_sor = strlen((char *)divisor);
-	size_t i = 0, len_q = 0, len_rem = 0;
+	size_t i = 0, len_q = 0, len_rem = 0, byte_sor = 0, byte_dend = 0;
 	uint8_t *quotient = NULL, *temp = NULL;
 
 	if (len_dend < len_sor || !len_sor)
 	{
-		*rem = (uint8_t *)strcpy((char *)(*rem), (char *)dividend);
+		remain = (uint8_t *)strcpy((char *)(remain), (char *)dividend);
 		return (NULL);
 	}
 	else if (len_sor == 1)
@@ -77,7 +27,7 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 	{
 		if (dividend[0] == '0')
 		{
-			*rem = (uint8_t *)strcpy((char *)(*rem), (char *)dividend);
+			remain = (uint8_t *)strcpy((char *)(remain), (char *)dividend);
 			return (NULL);
 		}
 	}
@@ -90,25 +40,30 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 		return (NULL);
 	}
 
-	(*rem) = (uint8_t *)strncpy((char *)(*rem), (char *)dividend, len_sor + i);
+	(remain) = (uint8_t *)strncpy((char *)(remain), (char *)dividend, len_sor + i);
 	for (i = 0; i <= (len_dend - len_sor); i++)
 	{
-		len_rem = strlen((char *)(*rem));
-		if ((*rem)[0] < divisor[0])
+		len_rem = strlen((char *)(remain));
+		if ((remain)[0] < divisor[0] || quotient[i - 1] == '0')
 		{
-			(*rem)[len_rem] = dividend[(len_sor - 1) + (i + 1)];
-			(*rem)[++len_rem] = '\0';
+			(remain)[len_rem] = dividend[(len_sor - 1) + (i + 1)];
+			(remain)[++len_rem] = '\0';
 		}
 
 		if (len_rem > len_sor)
-			quotient[i] = ((((((*rem)[0] - '0') * 10) + ((*rem)[1] - '0'))) / (divisor[0] - '0') + '0');
-		else if (len_rem == len_sor)
 		{
-			/*Check which is the bigger number*/
-			/*strncmp?*/
-			if ((*rem)[0] > divisor[0])
-				quotient[i] = ((*rem)[0] - '0') / (divisor[0] - '0') + '0';
+			byte_dend = strtonl((char *)(remain), 2);
+			byte_sor = strtonl((char *)divisor, 1);
+			quotient[i] = (byte_dend / byte_sor) + '0';
+			if (quotient[i] > '9')
+			{
+				byte_dend = strtonl((char *)(remain), 3);
+				byte_sor = strtonl((char *)divisor, 2);
+				quotient[i] = (byte_dend / byte_sor) + '0';
+			}
 		}
+		else if (len_rem == len_sor && strncmp((char *)(remain), (char *)divisor, len_sor) >= 0)
+			quotient[i] = ((remain)[0] - '0') / (divisor[0] - '0') + '0';
 		else
 		{
 			quotient[i] = '0';
@@ -117,7 +72,7 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 
 		temp = infiX_mul(divisor, &quotient[i]);
 		if (temp)
-			(*rem) = infiX_sub((*rem), temp);
+			(remain) = infiX_sub((remain), temp);
 		else
 			return (NULL);
 
@@ -126,230 +81,4 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **rem)
 	}
 
 	return (quotient);
-}
-
-/**
- * infiX_sub - subtracts numbers in a string
- * @n1: number to be subtracted
- * @n2: number to subtract
- *
- * Return: a string of the result, NULL on failure
- */
-uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
-{
-	ssize_t a = 0, t = 0, res_i = 0, diff = 0;
-	int byt_res = 0;
-	uint8_t *res = NULL;
-
-	n1 += n1 ? pad_char((char *)n1, "0") : 0;
-	n2 += n2 ? pad_char((char *)n2, "0") : 0;
-	a = n1 ? (ssize_t)(strlen((char *)n1) - 1) : -1;
-	t = n2 ? (ssize_t)(strlen((char *)n2) - 1) : -1;
-	res_i = (a > t) ? a : t;
-	if (res_i < 0)
-		return (NULL);
-
-	if (a == t)
-	{
-		for (diff = 0; n1[diff] && n2[diff]; diff++)
-		{
-			if (n1[diff] == n2[diff])
-				res_i--;
-			else
-				break;
-		}
-	}
-
-	res = malloc(sizeof(*res) * ((++res_i) + 2));
-	if (!res)
-		return (NULL);
-
-	res[res_i + 1] = '\0';
-	if (a < t || (a == t && n1[diff] < n2[diff]))
-		res[0] = '-';
-	else
-		res[0] = '0';
-
-	while ((a >= 0 || t >= 0) && res_i > 0)
-	{
-		if (a > t || (a == t && n1[diff] > n2[diff]))
-		{
-			if (t >= 0)
-				byt_res += ((n1[a] - '0') - (n2[t] - '0'));
-			else
-				byt_res += (n1[a] - '0');
-		}
-		else
-		{
-			if (a >= 0)
-				byt_res += ((n2[t] - '0') - (n1[a] - '0'));
-			else
-				byt_res += (n2[t] - '0');
-		}
-
-		if (byt_res < 0 && res_i > 1)
-		{
-			byt_res += 10;
-			res[res_i] = (byt_res % 10) + '0';
-			byt_res = -1;
-		}
-		else
-		{
-			res[res_i] = abs(byt_res % 10) + '0';
-			byt_res = 0;
-		}
-
-		--a;
-		--t;
-		--res_i;
-	}
-
-	return (res);
-}
-
-/**
- * infiX_mul - multiplies numbers stored in strings.
- * @n1: the first string with only decimals.
- * @n2: the second string with only decimals.
- *
- * Return: string with the result, NULL on failure
- */
-uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
-{
-	ssize_t top = 0, botm = 0, c_dgt = 0, t = 0, b = 0;
-	int byt_mul = 0;
-	uint8_t *prod = NULL, *c_mul = NULL, *total = NULL;
-
-	top = n1 ? (ssize_t)strlen((char *)n1) : 0;
-	botm = n2 ? (ssize_t)strlen((char *)n2) : 0;
-	if (top < 1 || botm < 1)
-		return (NULL);
-
-	for (b = botm - 1; b >= 0; b--)
-	{
-		if (n2[b] == '0')
-			continue;
-
-		c_dgt = top + (botm - b);
-		c_mul = calloc((c_dgt + 1), sizeof(*c_mul));
-		if (!c_mul)
-			return (NULL);
-
-		c_mul = memfill(c_mul, '0', (size_t)top, (size_t)(botm - b));
-		c_mul[0] = '0';
-		for (t = top - 1; t >= 0; t--)
-		{
-			byt_mul += ((n1[t] - '0') * (n2[b] - '0'));
-			c_mul[t + 1] = (byt_mul % 10) + '0';
-			byt_mul /= 10;
-		}
-
-		c_mul[0] = (byt_mul % 10) + '0';
-		byt_mul = 0;
-		prod = infiX_add(total, c_mul);
-		free(c_mul);
-		if (total)
-			free(total);
-
-		if (!prod)
-			return (NULL);
-
-		total = prod;
-	}
-
-	if (!prod)
-	{
-		prod = calloc(2, sizeof(*prod));
-		prod[0] = '0';
-	}
-
-	return (prod);
-}
-
-/**
- * infiX_add - adds numbers stored in strings.
- * @n1: the first string with only decimals.
- * @n2: the second string with only decimals.
- *
- * Return: pointer to result, NULL on failure
- */
-uint8_t *infiX_add(uint8_t *n1, uint8_t *n2)
-{
-	ssize_t a = 0, b = 0, byt_sum = 0, sum_i = 0;
-	uint8_t *sum = NULL;
-
-	n1 += n1 ? pad_char((char *)n1, "0") : 0;
-	n2 += n2 ? pad_char((char *)n2, "0") : 0;
-	a = n1 ? (ssize_t)(strlen((char *)n1) - 1) : -1;
-	b = n2 ? (ssize_t)(strlen((char *)n2) - 1) : -1;
-	sum_i = (a > b) ? a : b;
-	if (sum_i < 0)
-		return (NULL);
-
-	sum = calloc(((++sum_i) + 1), sizeof(*sum));
-	if (!sum)
-		return (NULL);
-
-	sum[0] = '0';
-	while (a >= 0 || b >= 0 || byt_sum > 0)
-	{
-		if (a >= 0)
-		{
-			byt_sum += (n1[a] - '0');
-			--a;
-		}
-
-		if (b >= 0)
-		{
-			byt_sum += (n2[b] - '0');
-			--b;
-		}
-
-		sum[sum_i] = (byt_sum % 10) + '0';
-		byt_sum /= 10;
-		--sum_i;
-	}
-
-	return (sum);
-}
-
-/**
- * pad_char - calculates length of initial padding characters in a string
- * @str: the string to check
- * @ch: the character
- *
- * Return: number of padding characters
- */
-size_t pad_char(char *str, char *ch)
-{
-	size_t zeros = 0, len = 0;
-
-	if (str)
-	{
-		len = strlen(str);
-		zeros = strspn(str, ch);
-		if (len && (zeros == len))
-			zeros--;
-	}
-
-	return (zeros);
-}
-
-/**
- * memfill - fills a section of memory with a constant byte
- * @mem: pointer to a memory block
- * @b: character to fill memory with
- * @start: where to start filling
- * @nbytes: how many bytes to fill
- *
- * Return: pointer to the modified memory block
- */
-void *memfill(void *mem, char b, size_t start, size_t nbytes)
-{
-	size_t i = 0;
-
-	for (i = start; i < (start + nbytes); i++)
-		((char *)mem)[i] = b;
-
-	return (mem);
 }
