@@ -4,12 +4,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <ctype.h>
+#include <errno.h>
 
 uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **remainder);
 uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
 uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2);
 uint8_t *infiX_add(uint8_t *n1, uint8_t *n2);
 size_t pad_char(char *str, char *ch);
+void *memfill(void *mem, char b, size_t start, size_t nbytes);
 
 /**
  * main - entry point
@@ -24,12 +26,12 @@ int main(int argc, uint8_t *argv[])
 
 	if (argc != 3)
 	{
-		fprintf(stderr, "USAGE: %s <dividend> <divisor>", argv[0]);
+		fprintf(stderr, "USAGE: %s <dividend> <divisor>\n", argv[0]);
 		return (EXIT_FAILURE);
 	}
 	else if (!isdigit(argv[1][0]) || !isdigit(argv[2][0]))
 	{
-		fprintf(stderr, "Insufficient digits to divide");
+		fprintf(stderr, "Insufficient digits to divide\n");
 		return (EXIT_FAILURE);
 	}
 
@@ -47,29 +49,50 @@ int main(int argc, uint8_t *argv[])
  */
 uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor, uint8_t **remainder)
 {
-	unsigned int len_end = strlen(dividend), len_sor = strlen(divisor), i = 0;
+	size_t len_end = strlen(dividend), len_sor = strlen(divisor), i = 0;
 	int len_q = 0, ds = 0, de = 0;
-	uint8_t *quotient = NULL;
+	uint8_t *quotient = NULL, *temp = NULL, calcs = NULL;
 
-	if (len_end < len_sor)
+	if (len_end < len_sor || !len_sor)
 	{
-		strcpy((uint8_t *)(*remainder), dividend);
+		*remainder = strcpy((char *)(*remainder), (char *)dividend);
 		return (NULL);
 	}
-	else if (len_end == len_sor)
-		return (NULL);
 
-	len_q = (len_end - len_sor) + 2;
-	quotient = calloc(len_q, sizeof(*quotient));
+	len_q = (len_end - len_sor) + 1;
+	quotient = calloc(len_q + 1, sizeof(*quotient));
 	if (!quotient)
 	{
 		perror("Malloc fail");
 		return (NULL);
 	}
 
-	for (i = len_sor; i < len_end; i++)
+	(*remainder) = strncpy((char *)(*remainder), dividend, len_sor + i);
+	for (i = 0; i < (len_end - len_sor); i++)
 	{
-		/* code */
+		if ((*remainder)[0] < divisor[0])
+		{
+			if ((i + 1) < (len_end - len_sor))
+				(*remainder)[strlen((*remainder))] = dividend[len_sor + i];
+			else
+				continue;
+		}
+
+		if (strlen((char *)(*remainder)) > strlen(divisor))
+		{
+			calcs = ((((((*remainder)[0] - '0') * 10) + ((*remainder)[1] - '0'))) / (divisor[0] - '0') + '0');
+			temp = infiX_mul(divisor, &calcs);
+		}
+		else
+		{
+			calcs = ((*remainder)[1] - '0') / (divisor[0] - '0') + '0';
+			temp = infiX_mul(divisor, &calcs);
+		}
+
+		if (temp)
+			(*remainder) = infiX_sub((*remainder), temp);
+		else
+			return (NULL);
 	}
 
 	return (quotient);
@@ -163,12 +186,12 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
  */
 uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 {
-	ssize_t top = 0, botm = 0, c_dgt = 0, b = 0, t = 0;
+	ssize_t top = 0, botm = 0, c_dgt = 0, t = 0, b = 0;
 	int byt_mul = 0;
 	uint8_t *prod = NULL, *c_mul = NULL, *total = NULL;
 
-	top = n1 ? (ssize_t)strlen((char *)n1) : -1;
-	botm = n2 ? (ssize_t)strlen((char *)n2) : -1;
+	top = n1 ? (ssize_t)strlen((char *)n1) : 0;
+	botm = n2 ? (ssize_t)strlen((char *)n2) : 0;
 	if (top < 1 || botm < 1)
 		return (NULL);
 
@@ -178,12 +201,12 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 			continue;
 
 		c_dgt = top + (botm - b);
-		c_mul = malloc(sizeof(*c_mul) * (c_dgt + 1));
+		c_mul = calloc((c_dgt + 1), sizeof(*c_mul));
 		if (!c_mul)
 			return (NULL);
 
-		c_mul = memset(c_mul, '0', c_dgt);
-		c_mul[c_dgt] = '\0';
+		c_mul = memfill(c_mul, '0', (size_t)top, (size_t)(botm - b));
+		c_mul[0] = '0';
 		for (t = top - 1; t >= 0; t--)
 		{
 			byt_mul += ((n1[t] - '0') * (n2[b] - '0'));
@@ -204,6 +227,12 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 		total = prod;
 	}
 
+	if (!prod)
+	{
+		prod = calloc(2, sizeof(*prod));
+		prod[0] = '0';
+	}
+
 	return (prod);
 }
 
@@ -212,28 +241,27 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
  * @n1: the first string with only decimals.
  * @n2: the second string with only decimals.
  *
- * Return: pointer to result, NULL on malloc fail or if both strings are empty
+ * Return: pointer to result, NULL on failure
  */
 uint8_t *infiX_add(uint8_t *n1, uint8_t *n2)
 {
-	ssize_t a = 0, t = 0, byt_sum = 0, sum_i = 0;
+	ssize_t a = 0, b = 0, byt_sum = 0, sum_i = 0;
 	uint8_t *sum = NULL;
 
 	n1 += n1 ? pad_char((char *)n1, "0") : 0;
 	n2 += n2 ? pad_char((char *)n2, "0") : 0;
 	a = n1 ? (ssize_t)(strlen((char *)n1) - 1) : -1;
-	t = n2 ? (ssize_t)(strlen((char *)n2) - 1) : -1;
-	sum_i = (a > t) ? a : t;
+	b = n2 ? (ssize_t)(strlen((char *)n2) - 1) : -1;
+	sum_i = (a > b) ? a : b;
 	if (sum_i < 0)
 		return (NULL);
 
-	sum = malloc(sizeof(*sum) * ((++sum_i) + 2));
+	sum = calloc(((++sum_i) + 1), sizeof(*sum));
 	if (!sum)
 		return (NULL);
 
-	sum[sum_i + 1] = '\0';
 	sum[0] = '0';
-	while (a >= 0 || t >= 0 || byt_sum > 0)
+	while (a >= 0 || b >= 0 || byt_sum > 0)
 	{
 		if (a >= 0)
 		{
@@ -241,10 +269,10 @@ uint8_t *infiX_add(uint8_t *n1, uint8_t *n2)
 			--a;
 		}
 
-		if (t >= 0)
+		if (b >= 0)
 		{
-			byt_sum += (n2[t] - '0');
-			--t;
+			byt_sum += (n2[b] - '0');
+			--b;
 		}
 
 		sum[sum_i] = (byt_sum % 10) + '0';
@@ -275,4 +303,23 @@ size_t pad_char(char *str, char *ch)
 	}
 
 	return (zeros);
+}
+
+/**
+ * memfill - fills a section of memory with a constant byte
+ * @mem: pointer to a memory block
+ * @b: character to fill memory with
+ * @start: where to start filling
+ * @nbytes: how many bytes to fill
+ *
+ * Return: pointer to the modified memory block
+ */
+void *memfill(void *mem, char b, size_t start, size_t nbytes)
+{
+	size_t i = 0;
+
+	for (i = start; i < (start + nbytes); i++)
+		((char *)mem)[i] = b;
+
+	return (mem);
 }

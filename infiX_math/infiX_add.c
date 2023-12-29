@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <ctype.h>
 
-char *infiX_add(char *n1, char *n2);
+uint8_t *infiX_add(uint8_t *n1, uint8_t *n2);
 size_t pad_char(char *str, char *ch);
 
 /**
@@ -21,12 +21,12 @@ int main(int argc, char *argv[])
 
 	if (argc != 3)
 	{
-		fprintf(stderr, "USAGE: %s <num1> <num2>", argv[0]);
+		fprintf(stderr, "USAGE: %s <num1> <num2>\n", argv[0]);
 		return (EXIT_FAILURE);
 	}
 	else if (!isdigit(argv[1][0]) || !isdigit(argv[2][0]))
 	{
-		fprintf(stderr, "Insufficient digits to add");
+		fprintf(stderr, "Insufficient digits to add\n");
 		return (EXIT_FAILURE);
 	}
 
@@ -39,26 +39,25 @@ int main(int argc, char *argv[])
  * @n1: the first string with only decimals.
  * @n2: the second string with only decimals.
  *
- * Return: pointer to result, NULL on malloc fail or if both strings are empty
+ * Return: pointer to result, NULL on failure
  */
-char *infiX_add(char *n1, char *n2)
+uint8_t *infiX_add(uint8_t *n1, uint8_t *n2)
 {
 	ssize_t a = 0, b = 0, byt_sum = 0, sum_i = 0;
-	char *sum = NULL;
+	uint8_t *sum = NULL;
 
-	n1 += n1 ? pad_char(n1, "0") : 0;
-	n2 += n2 ? pad_char(n2, "0") : 0;
-	a = n1 ? (ssize_t)(strlen(n1) - 1) : -1;
-	b = n2 ? (ssize_t)(strlen(n2) - 1) : -1;
+	n1 += n1 ? pad_char((char *)n1, "0") : 0;
+	n2 += n2 ? pad_char((char *)n2, "0") : 0;
+	a = n1 ? (ssize_t)(strlen((char *)n1) - 1) : -1;
+	b = n2 ? (ssize_t)(strlen((char *)n2) - 1) : -1;
 	sum_i = (a > b) ? a : b;
 	if (sum_i < 0)
 		return (NULL);
 
-	sum = malloc(sizeof(*sum) * ((++sum_i) + 2));
+	sum = calloc(((++sum_i) + 1), sizeof(*sum));
 	if (!sum)
 		return (NULL);
 
-	sum[sum_i + 1] = '\0';
 	sum[0] = '0';
 	while (a >= 0 || b >= 0 || byt_sum > 0)
 	{
