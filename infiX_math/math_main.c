@@ -1,7 +1,5 @@
 #include "infix.h"
 
-uint8_t *remain;
-
 /**
  * main - entry point
  * @argc: number of arguments
@@ -23,13 +21,6 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
-	remain = calloc(sizeof(*remain), 150);
-	if (!remain)
-	{
-		perror("Malloc fail");
-		return (EXIT_FAILURE);
-	}
-
 	return (which_op((uint8_t *)argv[1], (uint8_t *)argv[3], argv[2], argv[0]));
 }
 
@@ -44,12 +35,12 @@ int main(int argc, char *argv[])
  */
 int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 {
-	size_t i = 0, off_set = 0;
+	size_t i = 0;
 	uint8_t *answer = NULL;
 	op_func ops[] = {
 		{"+", infiX_add},
 		{"-", infiX_sub},
-		{"*", infiX_mul},
+		{"x", infiX_mul},
 		{"/", infiX_div},
 		{NULL, NULL},
 	};
@@ -65,10 +56,11 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 
 	if (answer)
 	{
-		off_set = pad_char((char *)answer, "0");
-		printf("%s %s %s = %s\n", (char *)num1, sign, (char *)num2, (char *)(&answer[off_set]));
-		free(remain);
+		printf("%s\n", (char *)(&answer[pad_char((char *)answer, "0")]));
 		free(answer);
+		if (remain)
+			free(remain);
+
 		return (EXIT_SUCCESS);
 	}
 	else if (!answer && errno)
@@ -76,7 +68,6 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 	else if (!answer && !ops[i].sign)
 		print_help(prog);
 
-	free(remain);
 	return (EXIT_FAILURE);
 }
 
@@ -87,7 +78,6 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 void print_help(char *prog_name)
 {
 	fprintf(stderr, "USAGE: %s <num1> <operand> <num2>\n", prog_name);
-	fprintf(stderr, "Currently supported operands +, -, *, /\n");
-	fprintf(stderr, "You might have to escape '*' like this \\*\n");
-	fprintf(stderr, "Only base 10 numbers are currently supported\n");
+	fprintf(stderr, "Only base 10 numbers are currently supported.\n");
+	fprintf(stderr, "Currently supported operands are '+', '-', 'x' and '/'.\n");
 }

@@ -1,5 +1,7 @@
 #include "infix.h"
 
+uint8_t *remain = NULL;
+
 /**
  * infiX_div - divides
  * @dividend: d
@@ -10,79 +12,82 @@
 uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 {
 	size_t len_dend = strlen((char *)dividend), len_sor = strlen((char *)divisor);
-	size_t i = 0, len_q = 0, len_rem = 0, byte_sor = 0, byte_dend = 0;
-	uint8_t *quotient = NULL, *temp = NULL, *prev = NULL;
+	size_t len_rem = 0, nd = 0, q = 0, len_q = 0, byte_dend = 0;
+	uint8_t *quotient = NULL, *temp = NULL, *new_r = NULL;
 
-	if (len_dend < len_sor || !len_sor)
+	if (len_dend < len_sor || !len_sor || (len_dend == 1 && dividend[0] == '0'))
 	{
 		strcpy((char *)remain, (char *)dividend);
 		return (NULL);
 	}
-	else if (len_sor == 1)
-	{
-		if (divisor[0] == '0')
-			return (NULL);
-	}
-	else if (len_dend == 1)
-	{
-		if (dividend[0] == '0')
-		{
-			strcpy((char *)remain, (char *)dividend);
-			return (NULL);
-		}
-	}
+	else if (len_sor == 1 && divisor[0] == '0')
+		return (NULL);
 
 	len_q = (len_dend - len_sor) + 1;
 	quotient = calloc(len_q + 2, sizeof(*quotient));
-	if (!quotient)
+	remain = calloc((len_dend > len_sor ? len_dend : len_sor) + 1, sizeof(*remain));
+	if (!quotient || !remain)
 	{
 		perror("Malloc fail");
 		return (NULL);
 	}
 
 	strncpy((char *)remain, (char *)dividend, len_sor);
-	for (i = 0; i < len_q; i++)
+	nd = len_sor;
+	len_rem = strlen((char *)remain);
+	for (q = 0; q < len_q && nd <= len_dend; q++)
 	{
-		len_rem = strlen((char *)remain);
-		if (i > 0 && quotient[i - 1] == '0')
+		errno = 0;
+		if (len_rem < len_sor)
 		{
-			remain[(len_rem - 1) + i] = dividend[(len_sor - 1) + i];
-			len_rem += i;
-			remain[len_rem] = '\0';
-		}
-
-		if (len_rem > len_sor)
-		{
-			byte_dend = strtonl((char *)remain, 2);
-			byte_sor = strtonl((char *)divisor, 1);
-			quotient[i] = (byte_dend / byte_sor) + '0';
-			if (quotient[i] > '9')
+			for (; q < len_q && len_rem < len_sor; q++, nd++, len_rem++)
 			{
-				byte_dend = strtonl((char *)remain, 3);
-				byte_sor = strtonl((char *)divisor, 2);
-				quotient[i] = (byte_dend / byte_sor) + '0';
+				remain[len_rem] = dividend[nd];
+				quotient[q] = '0';
 			}
 		}
-		else if (len_rem == len_sor && strncmp((char *)remain, (char *)divisor, len_sor) >= 0)
-			quotient[i] = (remain[0] - '0') / (divisor[0] - '0') + '0';
-		else
-		{
-			quotient[i] = '0';
-			continue;
-		}
 
-		temp = infiX_mul(divisor, &quotient[i]);
-		if (temp)
+		remain[len_rem] = '\0';
+		if (len_rem > len_sor)
 		{
-			prev = remain;
-			remain = infiX_sub(remain, temp);
-			free(prev);
+			byte_dend = strtonul((char *)remain, 2);
+			quotient[q] = (byte_dend / (divisor[0] - '0')) + '0';
 		}
 		else
-			return (NULL);
+			quotient[q] = ((remain[0] - '0') / (divisor[0] - '0')) + '0';
 
+		while (!new_r || (new_r[0] == '-' && quotient[q] > '0'))
+		{
+			if (new_r && new_r[0] == '-' && quotient[q] > '0')
+				quotient[q] -= 1;
+
+			free(temp);
+			free(new_r);
+			temp = NULL;
+			new_r = NULL;
+			temp = infiX_mul(divisor, &quotient[q]);
+			if (temp)
+			{
+				new_r = infiX_sub(remain, temp);
+				if (!new_r)
+					return (NULL);
+			}
+			else
+				return (NULL);
+		}
+
+		strcpy((char *)remain, (char *)(&new_r[pad_char((char *)new_r, "0")]));
+
+		len_rem = strlen((char *)remain);
+		remain[len_rem] = dividend[nd];
+		len_rem++;
+		nd++;
+		remain[len_rem] = '\0';
+
+		free(new_r);
 		free(temp);
 		temp = NULL;
+		new_r = NULL;
 	}
 
 	return (quotient);

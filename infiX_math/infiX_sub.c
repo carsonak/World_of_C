@@ -21,7 +21,7 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
 	if (res_i < 0)
 		return (NULL);
 
-	if (a == b)
+	if (a >= 0 && b >= 0 && a == b)
 	{
 		for (diff = 0; n1[diff] && n2[diff]; diff++)
 		{
@@ -36,7 +36,7 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
 	if (!res)
 		return (NULL);
 
-	if (a < b || (a == b && n1[diff] && n1[diff] < n2[diff]))
+	if (a < b || (a == b && n1[diff] < n2[diff]))
 		res[0] = '-';
 	else
 		res[0] = '0';

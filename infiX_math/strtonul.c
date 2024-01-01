@@ -1,16 +1,15 @@
 #include "infix.h"
 
 /**
- * strtonl - converts n elements of a string to long int
+ * strton64 - converts n elements of a string to size_t int
  * @num: pointer to a string with decimals
  * @nelem: max elements to convert
  *
- * Return: a long
+ * Return: a size_t
  */
-long strtonl(char *num, size_t nelem)
+size_t strtonul(char *num, size_t nelem)
 {
-	size_t i = 0;
-	long nam = 0;
+	size_t i = 0, nam = 0;
 
 	for (i = 0; i < nelem; i++)
 	{

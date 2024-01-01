@@ -30,7 +30,7 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
 uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2);
 uint8_t *infiX_add(uint8_t *n1, uint8_t *n2);
 size_t pad_char(char *str, char *ch);
-long strtonl(char *num, size_t nelem);
+size_t strtonul(char *num, size_t nelem);
 void *memfill(void *mem, char b, size_t start, size_t nbytes);
 
 #endif /*_INFIX_H_*/
