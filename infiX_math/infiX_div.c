@@ -17,6 +17,13 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 
 	if (len_dend < len_sor || !len_sor || (len_dend == 1 && dividend[0] == '0'))
 	{
+		remain = calloc(len_dend + 1, sizeof(*remain));
+		if (!remain)
+		{
+			perror("Malloc fail");
+			return (NULL);
+		}
+
 		strcpy((char *)remain, (char *)dividend);
 		return (NULL);
 	}
@@ -70,10 +77,16 @@ uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 			{
 				new_r = infiX_sub(remain, temp);
 				if (!new_r)
+				{
+					perror("Malloc fail");
 					return (NULL);
+				}
 			}
 			else
+			{
+				perror("Malloc fail");
 				return (NULL);
+			}
 		}
 
 		strcpy((char *)remain, (char *)(&new_r[pad_char((char *)new_r, "0")]));

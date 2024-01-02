@@ -58,16 +58,13 @@ int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog)
 	{
 		printf("%s\n", (char *)(&answer[pad_char((char *)answer, "0")]));
 		free(answer);
-		if (remain)
-			free(remain);
-
+		free(remain);
 		return (EXIT_SUCCESS);
 	}
-	else if (!answer && errno)
-		perror("FAILED");
-	else if (!answer && !ops[i].sign)
+	else if (!ops[i].sign)
 		print_help(prog);
 
+	free(remain);
 	return (EXIT_FAILURE);
 }
 

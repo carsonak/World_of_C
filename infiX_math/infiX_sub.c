@@ -34,7 +34,10 @@ uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2)
 
 	res = calloc(((++res_i) + 3), sizeof(*res));
 	if (!res)
+	{
+		perror("Malloc fail");
 		return (NULL);
+	}
 
 	if (a < b || (a == b && n1[diff] < n2[diff]))
 		res[0] = '-';

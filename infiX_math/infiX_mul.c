@@ -26,7 +26,10 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 		c_dgt = top + (botm - b);
 		c_mul = calloc((c_dgt + 2), sizeof(*c_mul));
 		if (!c_mul)
+		{
+			perror("Malloc fail");
 			return (NULL);
+		}
 
 		c_mul = memfill(c_mul, '0', (size_t)top, (size_t)(botm - b));
 		c_mul[0] = '0';
@@ -52,7 +55,13 @@ uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2)
 
 	if (!prod)
 	{
-		prod = calloc(3, sizeof(*prod));
+		prod = calloc(2, sizeof(*prod));
+		if (!prod)
+		{
+			perror("Malloc fail");
+			return (NULL);
+		}
+
 		prod[0] = '0';
 	}
 

@@ -22,7 +22,10 @@ uint8_t *infiX_add(uint8_t *n1, uint8_t *n2)
 
 	sum = calloc(((++sum_i) + 2), sizeof(*sum));
 	if (!sum)
+	{
+		perror("Malloc fail");
 		return (NULL);
+	}
 
 	sum[0] = '0';
 	while (a >= 0 || b >= 0 || byt_sum > 0)
