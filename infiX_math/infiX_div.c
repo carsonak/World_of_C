@@ -3,11 +3,15 @@
 uint8_t *remain = NULL;
 
 /**
- * infiX_div - divides
- * @dividend: d
- * @divisor: d
+ * infiX_div - divides a string on numbers
+ * @dividend: dividend
+ * @divisor: divisor
  *
- * Return: string with the results, NULL on failure
+ * Description: this function also stores the remainder on any division
+ * in a global variable "remain". This memory should be freed and reset
+ * NULL before the next call of this function.
+ *
+ * Return: string with the result, NULL on failure
  */
 uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor)
 {

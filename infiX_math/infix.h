@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+/*A dynamically allocated buffer to store the remainder of division*/
 extern uint8_t *remain;
 
 /**

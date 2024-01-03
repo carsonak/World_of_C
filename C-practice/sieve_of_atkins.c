@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdint.h>
 
+uint8_t *sieve_o_atkins(uint64_t range);
 int only_digits(char *str);
 
 /**
@@ -35,11 +36,45 @@ int main(int argc, char *argv[])
 	}
 
 	limit = strtol(argv[1], NULL, 10);
-	sieb = calloc(((limit / 8) + 1), sizeof(*sieb));
+	sieb = sieve_o_atkins(limit);
+	if (!sieb)
+		return (EXIT_FAILURE);
+
+	/*printf("Primes in range %ld:\n", limit);*/
+	for (i = 0, count = 0; i <= limit; i++)
+	{
+		if (sieb[i / 8] & (1 << (i % 8)))
+		{
+			printf("%5ld ", i);
+			if (!(++count % 16))
+				putchar('\n');
+		}
+	}
+
+	putchar('\n');
+	free(sieb);
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * sieve_o_atkins - generates a sieve to find prime numbers upto a limit
+ * @range: the range from 0
+ *
+ * Description: Uses a bit mask to mark prime numbers o the number line
+ *
+ * Return: a pointer to the sieve, NULL on failure
+ */
+uint8_t *sieve_o_atkins(uint64_t range)
+{
+	int64_t limit = range, ulimit = 0;
+	int64_t i, j, x, y, z;
+	uint8_t *sieb = NULL;
+
+	sieb = calloc(((range / 8) + 1), sizeof(*sieb));
 	if (!sieb)
 	{
-		fprintf(stderr, "A memory error occured\n");
-		return (EXIT_FAILURE);
+		perror("Sieve alocation failed\n");
+		return (NULL);
 	}
 
 	ulimit = sqrt(limit);
@@ -80,28 +115,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	sieb[2 / 8] |= (1 << (2 % 8));
+	sieb[3 / 8] |= (1 << (3 % 8));
+	sieb[5 / 8] |= (1 << (5 % 8));
 	for (i = 5; i <= ulimit; i++)
 		if (sieb[i / 8] & (1 << (i % 8)))
 			for (j = 1; (j * i * i) <= limit; j++)
 				sieb[(j * i * i) / 8] &= ~(1 << ((j * i * i) % 8));
 
-	sieb[2 / 8] |= (1 << (2 % 8));
-	sieb[3 / 8] |= (1 << (3 % 8));
-	sieb[5 / 8] |= (1 << (5 % 8));
-	/*printf("Primes in range %ld:\n", limit);*/
-	for (i = 0, count = 0; i <= limit; i++)
-	{
-		if (sieb[i / 8] & (1 << (i % 8)))
-		{
-			printf("%5ld ", i);
-			if (!(++count % 16))
-				putchar('\n');
-		}
-	}
-
-	putchar('\n');
-	free(sieb);
-	return (EXIT_SUCCESS);
+	return (sieb);
 }
 
 /**
