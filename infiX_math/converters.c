@@ -1,4 +1,5 @@
 #include "infix.h"
+/*#define TESTING_CONVERTERS*/
 
 /**
  * str_u32 - convert a string of numbers to a 32 bit int array
@@ -14,29 +15,32 @@
  */
 uint32_t *str_u32(uint8_t *num)
 {
-	size_t u32arr_sz = 0, len = 0, g = 0, h = 0;
+	size_t u32arr_sz = 0, len = 0, h = 0;
+	int i = 0, g = 0;
 	uint32_t *u32arr = NULL;
-	int i = 0, mul = 1;
 
 	if (!num)
 		return (NULL);
 
+	num += pad_char((char *)num, "0");
 	len = strlen((char *)num);
-	u32arr_sz = (len / 6) + ((len % 6) ? 1 : 0);
-	u32arr = calloc(sizeof(*u32arr), u32arr_sz + 2);
+	u32arr_sz = (len / U32_DIGITS) + ((len % U32_DIGITS) ? 1 : 0);
+	u32arr = calloc((u32arr_sz + 2), sizeof(*u32arr));
 	if (!u32arr)
+	{
+		perror("Malloc Fail");
 		return (NULL);
+	}
 
 	/*Index 0 will have the size of the array*/
 	u32arr[0] = u32arr_sz;
-	for (h = u32arr_sz, g = 0; h > 0 && g < len; h--)
+	/*The number in the string shall be read from the least significant digit*/
+	for (h = 1, g = (len - 1); h <= u32arr_sz && g >= 0; h++)
 	{
-		mul = ((len - (g + 1)) > 5) ? 5 : (len - (g + 1));
+		for (i = 0; i < U32_DIGITS && (g - i) >= 0; i++)
+			u32arr[h] += (num[g - i] - '0') * (uint32_t)(pow(10, i));
 
-		for (i = 0; i < 6 && (g + i) < len; i++, mul--)
-			u32arr[h] += (num[g + i] - '0') * (uint32_t)(pow(10, mul));
-
-		g += 6;
+		g -= i;
 	}
 
 	return (u32arr);
@@ -64,42 +68,37 @@ uint8_t *u32_str(uint32_t *u32a)
 		return (NULL);
 
 	u32arr_sz = u32a[0];
-	len = u32arr_sz * 6;
-	num = calloc(sizeof(*num), (len + 1));
+	while (!u32a[u32arr_sz] && u32arr_sz > 1)
+		--u32arr_sz;
+
+	len = u32arr_sz * U32_DIGITS;
+	num = calloc((len + 1), sizeof(*num));
 	if (!num)
+	{
+		perror("Malloc Fail");
 		return (NULL);
+	}
+
+	temp = u32a[u32arr_sz];
+	while (temp / div >= 10)
+		div *= 10;
 
 	for (h = u32arr_sz, g = 0; h > 0 && g < len; h--)
 	{
 		temp = u32a[h];
-		while (temp / div >= 10)
-			div = div * 10;
-
-		for (i = 0; i < 6; i++)
+		for (i = 0; div && (g + i) < len; i++)
 		{
-			if (temp)
-				num[g + i] = (temp / div) + '0';
-			else if (h > 1 && !temp)
-				num[g + i] = '0';
-			else if (h <= 1 && !temp)
-			{
-				num[g + i] = '0';
-				break;
-			}
-
-			if (div)
-			{
-				temp %= div;
-				div /= 10;
-			}
+			num[g + i] = (temp / div) + '0';
+			temp %= div;
+			div /= 10;
 		}
 
-		g += 6;
-		div = 1;
+		g += i;
+		div = (U32_ROLL / 10);
 	}
 
 	if (i)
-		num[(g - 6) + i] = '\0';
+		num[g] = '\0';
 
 	return (num);
 }
@@ -138,30 +137,35 @@ int main(void)
 	uint32_t *ntemp = NULL, len = 0;
 	uint8_t *stemp = NULL;
 	char *nstr[] = {
-		"123456",
-		"1000000",
-		"909897000000234587",
+		"123456789",
+		"12345678912",
+		"1000000000",
+		"909897004000000000078234587",
 		"0",
-		"000000123",
 		"12",
-		"000001000002000003000004000000",
+		"00000678",
+		"00000678912",
+		"000000000003456",
+		"00000100000000200000000300000000004000000",
 		NULL,
 	};
 
 	while (nstr[g])
 	{
 		printf("%s\n", &nstr[g][pad_char(nstr[g], "0")]);
-		ntemp = str_u32((uint8_t *)(&nstr[g][pad_char(nstr[g], "0")]));
+		/*ntemp = str_u32((uint8_t *)(&nstr[g][pad_char(nstr[g], "0")]));*/
+		/*printf("%s\n", nstr[g]);*/
+		ntemp = str_u32((uint8_t *)nstr[g]);
 		if (!ntemp)
 			return (EXIT_FAILURE);
 
 		len = ntemp[0];
 		for (i = len; i > 0; i--)
 		{
-			if (i > 1)
-				printf("%06d", (int)ntemp[i]);
+			if (i < len)
+				printf("%09d", (uint32_t)ntemp[i]);
 			else
-				printf("%d", (int)ntemp[i]);
+				printf("%d", (uint32_t)ntemp[i]);
 		}
 
 		printf(" [%d: Blocks]\n", (int)len);

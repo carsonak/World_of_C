@@ -8,10 +8,19 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <errno.h>
-#include <math.h> /*pow(), Need to link wtih -lm*/
+#include <math.h> /*pow(), Need to link with -lm*/
 
-/*Max size for uint32_t calculations*/
-#define U32_BREAK (1000000)
+/*Max nnumber of digits for uint32_t*/
+#define U32_DIGITS (9)
+
+/*Max size for uint32_t calculations: 10^8*/
+#define U32_ROLL (1000000000)
+
+/*Max nnumber of digits for uint64_t*/
+#define U64_DIGITS (U32_DIGITS * U32_DIGITS)
+
+/*Max size for uint64_t calculations: 10^18*/
+#define U64_ROLL (U32_ROLL * U32_ROLL)
 
 /*A dynamically allocated buffer to store the remainder of division*/
 extern uint8_t *remain;
