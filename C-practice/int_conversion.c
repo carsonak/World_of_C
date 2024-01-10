@@ -22,8 +22,8 @@ void print_number(int num, char *str)
 
 	while (var > 0)
 	{
-		b = num / var;
-		str[index] = (b + '0');
+		b = (num / var) + '0';
+		str[index] = b;
 		num = num % var;
 		var = var / 10;
 		index++;
@@ -40,6 +40,7 @@ void print_number(int num, char *str)
 int main(void)
 {
 	char s[100];
+
 	print_number(INT_MIN, s);
 	printf("%s\n", s);
 	return (0);
