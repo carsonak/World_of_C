@@ -23,7 +23,12 @@ uint32_t *str_u32(uint8_t *num)
 		return (NULL);
 
 	num += pad_char((char *)num, "0");
-	len = strlen((char *)num);
+	for (len = 0; num[len] >= '0' && num[len] <= '9'; len++)
+		;
+
+	if (!len)
+		return (NULL);
+
 	u32arr_sz = (len / U32_DIGITS) + ((len % U32_DIGITS) ? 1 : 0);
 	u32arr = calloc((u32arr_sz + 2), sizeof(*u32arr));
 	if (!u32arr)
@@ -47,7 +52,7 @@ uint32_t *str_u32(uint8_t *num)
 }
 
 /**
- * u32_str - convert a 32 bit int array to a string
+ * u32_str - convert a 32 bit int array to a string of numbers
  * @u32a: a 32 bit array
  *
  * Description: This function converts an array of unsigned 32 bit integers

@@ -13,7 +13,7 @@
 /*Max nnumber of digits for uint32_t*/
 #define U32_DIGITS (9)
 
-/*Max size for uint32_t calculations: 10^8*/
+/*Max size for uint32_t calculations: 10^9*/
 #define U32_ROLL (1000000000)
 
 /*Max nnumber of digits for uint64_t*/
@@ -33,18 +33,18 @@ extern uint8_t *remain;
 typedef struct operations
 {
 	char *sign;
-	uint8_t *(*f)(uint8_t *n1, uint8_t *n2);
+	uint32_t *(*f)(uint32_t *n1, uint32_t *n2);
 
 } op_func;
 
 void print_help(char *prog_name);
-int which_op(uint8_t *num1, uint8_t *num2, char *sign, char *prog);
-uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor);
-uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
-uint8_t *infiX_mul(uint8_t *n1, uint8_t *n2);
-uint8_t *infiX_add(uint8_t *n1, uint8_t *n2);
+int infiX_op(char *num1, char *sign, char *num2, char *prog);
 uint32_t *str_u32(uint8_t *num);
 uint8_t *u32_str(uint32_t *u32a);
+uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor);
+uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
+uint32_t *infiX_mul(uint32_t *n1_arr, uint32_t *n2_arr);
+uint32_t *infiX_add(uint32_t *n1_arr, uint32_t *n2_arr);
 size_t pad_char(char *str, char *ch);
 size_t strtonul(char *num, size_t nelem);
 void *memfill(void *mem, char b, size_t start, size_t nbytes);
