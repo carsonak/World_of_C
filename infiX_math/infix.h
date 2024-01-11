@@ -22,6 +22,9 @@
 /*Max size for uint64_t calculations: 10^18*/
 #define U64_ROLL (U32_ROLL * U32_ROLL)
 
+/*uint32_t negative bit toggle*/
+#define U32_NEGBIT (1 << 30)
+
 /*A dynamically allocated buffer to store the remainder of division*/
 extern uint8_t *remain;
 
@@ -42,7 +45,7 @@ int infiX_op(char *num1, char *sign, char *num2, char *prog);
 uint32_t *str_u32(uint8_t *num);
 uint8_t *u32_str(uint32_t *u32a);
 uint8_t *infiX_div(uint8_t *dividend, uint8_t *divisor);
-uint8_t *infiX_sub(uint8_t *n1, uint8_t *n2);
+uint32_t *infiX_sub(uint32_t *n1_arr, uint32_t *n2_arr);
 uint32_t *infiX_mul(uint32_t *n1_arr, uint32_t *n2_arr);
 uint32_t *infiX_add(uint32_t *n1_arr, uint32_t *n2_arr);
 size_t pad_char(char *str, char *ch);

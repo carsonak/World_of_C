@@ -18,7 +18,7 @@ int infiX_op(char *num1, char *sign, char *num2, char *prog)
 	uint8_t *answer = NULL;
 	op_func ops[] = {
 		{"+", infiX_add},
-		/*{"-", infiX_sub},*/
+		{"-", infiX_sub},
 		{"x", infiX_mul},
 		/*{"/", infiX_div},*/
 		{NULL, NULL},

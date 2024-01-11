@@ -73,16 +73,27 @@ uint8_t *u32_str(uint32_t *u32a)
 		return (NULL);
 
 	u32arr_sz = u32a[0];
+	/*Checking if the number is negative*/
+	if (u32a[u32arr_sz] & U32_NEGBIT)
+	{
+		u32a[u32arr_sz] ^= U32_NEGBIT;
+		len += 1;
+		temp = 1;
+	}
+
 	while (!u32a[u32arr_sz] && u32arr_sz > 1)
 		--u32arr_sz;
 
-	len = u32arr_sz * U32_DIGITS;
+	len += u32arr_sz * U32_DIGITS;
 	num = calloc((len + 1), sizeof(*num));
 	if (!num)
 	{
 		perror("Malloc Fail");
 		return (NULL);
 	}
+
+	if (temp)
+		num[0] = '-';
 
 	temp = u32a[u32arr_sz];
 	while (temp / div >= 10)
@@ -93,7 +104,11 @@ uint8_t *u32_str(uint32_t *u32a)
 		temp = u32a[h];
 		for (i = 0; div && (g + i) < len; i++)
 		{
-			num[g + i] = (temp / div) + '0';
+			if (num[0] == '-')
+				num[g + i + 1] = (temp / div) + '0';
+			else
+				num[g + i] = (temp / div) + '0';
+
 			temp %= div;
 			div /= 10;
 		}
@@ -103,7 +118,12 @@ uint8_t *u32_str(uint32_t *u32a)
 	}
 
 	if (i)
-		num[g] = '\0';
+	{
+		if (num[0] == '-')
+			num[g + 1] = '\0';
+		else
+			num[g] = '\0';
+	}
 
 	return (num);
 }

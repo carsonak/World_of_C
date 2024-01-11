@@ -10,7 +10,7 @@
 uint32_t *infiX_add(uint32_t *n1_arr, uint32_t *n2_arr)
 {
 	ssize_t a_sz = -1, b_sz = -1, sum_sz = 0, g = 1, h = 1, k = 1;
-	int64_t byt_sum = 0;
+	uint64_t byt_sum = 0;
 	uint32_t *sum = NULL;
 
 	/*Get and adjust size of the arrays. Stored at index 0.*/
@@ -53,13 +53,13 @@ uint32_t *infiX_add(uint32_t *n1_arr, uint32_t *n2_arr)
 	{
 		if (g <= a_sz)
 		{
-			byt_sum += n1_arr[g];
+			byt_sum += (uint64_t)n1_arr[g];
 			++g;
 		}
 
 		if (h <= b_sz)
 		{
-			byt_sum += n2_arr[h];
+			byt_sum += (uint64_t)n2_arr[h];
 			++h;
 		}
 
