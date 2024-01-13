@@ -16,20 +16,14 @@ uint32_t *infiX_mul(uint32_t *n1_arr, uint32_t *n2_arr)
 	/*Get and adjust size of the arrays. Stored at index 0.*/
 	if (n1_arr)
 	{
+		trim_intarr(&n1_arr);
 		top = n1_arr[0];
-		while (!n1_arr[top] && top > 1)
-			--top;
-
-		n1_arr[0] = top;
 	}
 
 	if (n2_arr)
 	{
+		trim_intarr(&n2_arr);
 		botm = n2_arr[0];
-		while (!n2_arr[botm] && botm > 1)
-			--botm;
-
-		n2_arr[0] = botm;
 	}
 
 	/*Multiplication by zero or NULL*/
@@ -82,5 +76,6 @@ uint32_t *infiX_mul(uint32_t *n1_arr, uint32_t *n2_arr)
 		}
 	}
 
+	trim_intarr(&prod);
 	return (prod);
 }

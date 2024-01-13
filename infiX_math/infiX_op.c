@@ -20,7 +20,7 @@ int infiX_op(char *num1, char *sign, char *num2, char *prog)
 		{"+", infiX_add},
 		{"-", infiX_sub},
 		{"x", infiX_mul},
-		/*{"/", infiX_div},*/
+		{"/", infiX_div},
 		{NULL, NULL},
 	};
 
@@ -65,17 +65,16 @@ int infiX_op(char *num1, char *sign, char *num2, char *prog)
 		}
 	}
 
-	/**
-	 * if (remain)
-	 * free(remain);
-	 */
-
 	if (n1_arr)
 		free(n1_arr);
 
 	if (n2_arr)
 		free(n2_arr);
 
+	if (remain)
+		free(remain);
+
+	remain = NULL;
 	if (ans_arr)
 	{
 		answer = u32_str(ans_arr);

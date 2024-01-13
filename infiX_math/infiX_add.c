@@ -16,20 +16,14 @@ uint32_t *infiX_add(uint32_t *n1_arr, uint32_t *n2_arr)
 	/*Get and adjust size of the arrays. Stored at index 0.*/
 	if (n1_arr)
 	{
+		trim_intarr(&n1_arr);
 		a_sz = n1_arr[0];
-		while (!n1_arr[a_sz] && a_sz > 1)
-			--a_sz;
-
-		n1_arr[0] = a_sz;
 	}
 
 	if (n2_arr)
 	{
+		trim_intarr(&n2_arr);
 		b_sz = n2_arr[0];
-		while (!n2_arr[b_sz] && b_sz > 1)
-			--b_sz;
-
-		n2_arr[0] = b_sz;
 	}
 
 	/**
@@ -68,5 +62,6 @@ uint32_t *infiX_add(uint32_t *n1_arr, uint32_t *n2_arr)
 		++k;
 	}
 
+	trim_intarr(&sum);
 	return (sum);
 }

@@ -16,20 +16,14 @@ uint32_t *infiX_sub(uint32_t *n1_arr, uint32_t *n2_arr)
 	/*Get and adjust size of the arrays. Stored at index 0.*/
 	if (n1_arr)
 	{
+		trim_intarr(&n1_arr);
 		a_sz = n1_arr[0];
-		while (!n1_arr[a_sz] && a_sz > 1)
-			--a_sz;
-
-		n1_arr[0] = a_sz;
 	}
 
 	if (n2_arr)
 	{
+		trim_intarr(&n2_arr);
 		b_sz = n2_arr[0];
-		while (!n2_arr[b_sz] && b_sz > 1)
-			--b_sz;
-
-		n2_arr[0] = b_sz;
 	}
 
 	/**
@@ -86,14 +80,14 @@ uint32_t *infiX_sub(uint32_t *n1_arr, uint32_t *n2_arr)
 		}
 
 		/*If subtraction results in a -ve number borrow from the next digits*/
-		if (byt_res < 0 && k < (res_sz - 1))
+		if (byt_res < 0 && k < res_sz)
 		{
 			byt_res += U32_ROLL;
 			res[k] = byt_res % U32_ROLL;
 			byt_res = -1;
 		}
 		else
-		{ /*In a special case where subtraction of the */
+		{
 			res[k] = byt_res % U32_ROLL;
 			byt_res = 0;
 		}
@@ -107,5 +101,6 @@ uint32_t *infiX_sub(uint32_t *n1_arr, uint32_t *n2_arr)
 	if (a_sz < b_sz || (a_sz == b_sz && n1_arr[diff] < n2_arr[diff]))
 		res[res_sz] |= U32_NEGBIT;
 
+	trim_intarr(&res);
 	return (res);
 }

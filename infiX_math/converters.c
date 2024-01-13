@@ -8,8 +8,8 @@
  * Description: This function converts a string of numbers to an array of
  * unsigned 32 bit integers.
  * The array shall be in little endian style whereby the lower value numbers
- * will be placed in the lower indices. Index 0 will have a value indicating
- * the size of the array.
+ * will be placed in the lower indices. Index 0 will have a value greater
+ * than 0 indicating the size of the array.
  *
  * Return: an array of 32 bit ints, NULL on failure
  */
@@ -58,8 +58,8 @@ uint32_t *str_u32(uint8_t *num)
  * Description: This function converts an array of unsigned 32 bit integers
  * to a string.
  * The array shall be in little endian style whereby the lower value numbers
- * will be placed in the lower indices. Index 0 will have a value indicating
- * the size of the array.
+ * will be placed in the lower indices. Index 0 will have a value greater
+ * than 0 indicating the size of the array.
  *
  * Return: a string of numbers, NULL on failure
  */
@@ -81,9 +81,8 @@ uint8_t *u32_str(uint32_t *u32a)
 		temp = 1;
 	}
 
-	while (!u32a[u32arr_sz] && u32arr_sz > 1)
-		--u32arr_sz;
-
+	trim_intarr(&u32a);
+	u32arr_sz = u32a[0];
 	len += u32arr_sz * U32_DIGITS;
 	num = calloc((len + 1), sizeof(*num));
 	if (!num)
@@ -126,6 +125,24 @@ uint8_t *u32_str(uint32_t *u32a)
 	}
 
 	return (num);
+}
+
+/**
+ * trim_intarr - trims empty spaces from the end of an int array
+ * @arr: pointer to the uint32_t arrary
+ */
+void trim_intarr(uint32_t **arr)
+{
+	size_t arr_sz = 0;
+
+	if (!arr || !(*arr))
+		return;
+
+	arr_sz = (*arr)[0];
+	while (!(*arr)[arr_sz] && arr_sz > 1)
+		--arr_sz;
+
+	(*arr)[0] = arr_sz;
 }
 
 #ifdef TESTING_CONVERTERS
