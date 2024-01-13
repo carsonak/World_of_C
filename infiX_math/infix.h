@@ -40,7 +40,7 @@ typedef struct operations
 
 } op_func;
 
-void print_help(void); /*Utilities*/
+void print_help(void);
 uint32_t *str_u32(uint8_t *num);
 uint8_t *u32_str(uint32_t *u32a);
 size_t pad_char(char *str, char *ch);
@@ -52,7 +52,7 @@ uint32_t *mplug_num_low(uint32_t **dest, uint32_t src);
 void trim_intarr(uint32_t **arr);
 
 int infiX_op(char *num1, char *sign, char *num2);
-uint32_t *infiX_div(uint32_t *dividend, uint32_t *divisor); /*Main math funcs*/
+uint32_t *infiX_div(uint32_t *dividend, uint32_t *divisor);
 int zero_result_check(uint32_t *dend, uint32_t *sor, uint32_t **qt);
 int64_t get_quotient(uint32_t *dvsor);
 uint32_t *infiX_sub(uint32_t *n1_arr, uint32_t *n2_arr);
