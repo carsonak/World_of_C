@@ -9,9 +9,9 @@ uint32_t *remain = NULL;
  * @dividend: dividend
  * @divisor: divisor
  *
- * Description: this function also stores the remainder on any division
- * in a global variable "remain". This memory should be freed before the
- * next call of this function.
+ * Description: this function will store the remainder of any division
+ * in a global variable "remain". This variable should be freed after
+ * this function has returned.
  *
  * Return: array with the result, NULL on failure
  */
@@ -37,11 +37,10 @@ uint32_t *infiX_div(uint32_t *dividend, uint32_t *divisor)
 	if (zero_result_check(dividend, divisor, &quotient))
 		return (quotient);
 
-	len_q = (len_dend - len_sor) ? (len_dend - len_sor) : len_dend;
+	len_q = (len_dend - len_sor) + 1;
 	/*Length of remain will never be greater than len_sor + 1*/
 	remain = calloc(len_sor + 3, sizeof(*remain));
-	quotient = calloc(len_q + 2, sizeof(*quotient));
-	if (!quotient || !remain)
+	if (!remain)
 	{
 		perror("Malloc fail");
 		return (NULL);
@@ -69,32 +68,30 @@ uint32_t *infiX_div(uint32_t *dividend, uint32_t *divisor)
 	{
 		errno = 0;
 		len_rem = remain[0];
-		if (len_rem < len_sor)
+		for (; q > 0 && len_rem < len_sor; q--, nd--, len_rem++)
 		{
-			for (; q > 0 && len_rem < len_sor; q--, nd--, len_rem++)
+			quotient[q] = 0;
+			if (!mplug_num_low(&remain, dividend[nd]))
 			{
-				quotient[q] = 0;
-				if (!mplug_num_low(&remain, dividend[nd]))
-				{
-					free(quotient);
-					return (NULL);
-				}
+				free(quotient);
+				return (NULL);
 			}
-
-			len_rem = remain[0];
 		}
 
-		hold = get_quotient(quotient, divisor, q);
-		if (hold < 0)
+		hold = get_quotient(divisor);
+		if (hold < 0 || !mplug_num_low(&quotient, hold))
 		{
 			free(quotient);
 			return (NULL);
 		}
 
-		quotient[q] = hold;
 		if (nd > 0)
+		{
 			if (!mplug_num_low(&remain, dividend[nd]))
 				return (NULL);
+		}
+		else
+			break;
 
 		nd--;
 	}
@@ -112,9 +109,9 @@ uint32_t *infiX_div(uint32_t *dividend, uint32_t *divisor)
  *
  * Return: the quotient, -1 on failure
  */
-int64_t get_quotient(uint32_t *quot, uint32_t *dvsor, size_t q_i)
+int64_t get_quotient(uint32_t *dvsor)
 {
-	uint32_t *rem_tmp = NULL, *tmp_mul = NULL, *tmp_sub = NULL, q_tmp[] = {1, 0, 0};
+	uint32_t *rem_tmp = NULL, *tmp_mul = NULL, *tmp_sub = NULL, quotient_tmp[] = {1, 0, 0};
 	int64_t hold = 0, over_shoot = 0;
 
 	if (!dvsor)
@@ -124,19 +121,17 @@ int64_t get_quotient(uint32_t *quot, uint32_t *dvsor, size_t q_i)
 	if (remain[0] > dvsor[0])
 		hold = (hold * U32_ROLL) + (int64_t)remain[remain[0] - 1];
 
-	quot[q_i] = hold / (int64_t)dvsor[dvsor[0]];
+	quotient_tmp[1] = hold / (int64_t)dvsor[dvsor[0]];
 	while (!rem_tmp ||
-		   (((rem_tmp[0] > dvsor[0] || (rem_tmp[0] == dvsor[0] && rem_tmp[rem_tmp[0]] >= dvsor[dvsor[0]])) ||
-			 rem_tmp[rem_tmp[0]] & U32_NEGBIT) &&
-			quot[q_i] > 0))
+		   (((rem_tmp[0] > dvsor[0] ||
+			  (rem_tmp[0] == dvsor[0] && rem_tmp[rem_tmp[0]] >= dvsor[dvsor[0]]))) &&
+			quotient_tmp[1] > 0))
 	{
-		if (rem_tmp &&
-			((rem_tmp[0] >= dvsor[0]) || (rem_tmp[rem_tmp[0]] & U32_NEGBIT)))
+		if (rem_tmp && ((rem_tmp[0] >= dvsor[0]) || (rem_tmp[rem_tmp[0]] & U32_NEGBIT)))
 		{
 			if (rem_tmp[rem_tmp[0]] & U32_NEGBIT)
-			{
-				/*Decrese the quotient*/
-				tmp_sub = infiX_sub(tmp_mul, remain); /*divide tmp_sub by dvsor*/
+			{ /*Decrease the quotient*/
+				tmp_sub = infiX_sub(tmp_mul, remain);
 				if (!tmp_sub)
 				{
 					free(rem_tmp);
@@ -145,26 +140,25 @@ int64_t get_quotient(uint32_t *quot, uint32_t *dvsor, size_t q_i)
 				}
 
 				hold = tmp_sub[tmp_sub[0]];
+				/*How many of dvsor[dvsor[0]] can fit in hold?*/
 				if (hold < dvsor[dvsor[0]])
-					over_shoot = dvsor[dvsor[0]] - hold;
+					over_shoot = 1;
 				else
 					over_shoot = hold / (int64_t)dvsor[dvsor[0]];
 
 				free(tmp_sub);
-				if ((quot[q_i] - over_shoot) < 0)
-					quot[q_i] -= abs((int)(quot[q_i] - over_shoot));
-				else
-					quot[q_i] -= over_shoot;
+				quotient_tmp[1] -= over_shoot;
 			}
 			else
-			{
-				/*Increase the quotient*/
-				hold = rem_tmp[rem_tmp[0]]; /*divide rem_tmp by dvsor*/
+			{ /*Increase the quotient*/
+				hold = rem_tmp[rem_tmp[0]];
+				/*How many of dvsor[dvsor[0]] can fit in hold?*/
 				if (hold < dvsor[dvsor[0]])
-					hold = (hold * U32_ROLL) + (int64_t)remain[remain[0] - 1];
+					over_shoot = 1;
+				else
+					over_shoot = hold / (int64_t)dvsor[dvsor[0]];
 
-				over_shoot = hold / (int64_t)dvsor[dvsor[0]];
-				quot[q_i] += over_shoot;
+				quotient_tmp[1] += over_shoot;
 			}
 		}
 
@@ -172,8 +166,7 @@ int64_t get_quotient(uint32_t *quot, uint32_t *dvsor, size_t q_i)
 		tmp_mul = NULL;
 		free(rem_tmp);
 		rem_tmp = NULL;
-		q_tmp[1] = quot[q_i];
-		tmp_mul = infiX_mul(dvsor, q_tmp);
+		tmp_mul = infiX_mul(dvsor, quotient_tmp);
 		if (tmp_mul)
 		{
 			rem_tmp = infiX_sub(remain, tmp_mul);
@@ -187,7 +180,7 @@ int64_t get_quotient(uint32_t *quot, uint32_t *dvsor, size_t q_i)
 	_memcpy((char *)remain, (char *)rem_tmp, ((rem_tmp[0] + 2) * sizeof(*rem_tmp)));
 	free(rem_tmp);
 	free(tmp_mul);
-	return (quot[q_i]);
+	return (quotient_tmp[1]);
 }
 
 /**

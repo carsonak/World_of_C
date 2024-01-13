@@ -9,7 +9,7 @@ BEGIN {
     g = 1
     for (i = length(reversed_contents); i >= 1; i--) {
         printf "%s", substr(reversed_contents, i, 1) >> tempfile
-        if (g % 9 == 1 && substr(reversed_contents, i - 1, 1) != " ") {
+        if (g % 9 == 0 && substr(reversed_contents, i - 1, 1) != " ") {
             printf " " >> tempfile
         }
         g++

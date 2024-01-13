@@ -84,10 +84,10 @@ uint32_t *mplug_num_low(uint32_t **dest, uint32_t src)
 		for (f = 2, d = 1; d <= len_d; f++, d++)
 			final[f] = (*dest)[d];
 
+		trim_intarr(&final);
 		if (*dest)
 			free(*dest);
 
-		trim_intarr(&final);
 		*dest = final;
 	}
 	else

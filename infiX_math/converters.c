@@ -7,7 +7,7 @@
  *
  * Description: This function converts a string of numbers to an array of
  * unsigned 32 bit integers.
- * The array shall be in little endian style whereby the lower value numbers
+ * The array will be in little endian style whereby the lower value numbers
  * will be placed in the lower indices. Index 0 will have a value greater
  * than 0 indicating the size of the array.
  *
@@ -27,7 +27,10 @@ uint32_t *str_u32(uint8_t *num)
 		;
 
 	if (!len)
+	{
+		print_help();
 		return (NULL);
+	}
 
 	u32arr_sz = (len / U32_DIGITS) + ((len % U32_DIGITS) ? 1 : 0);
 	u32arr = calloc((u32arr_sz + 2), sizeof(*u32arr));
@@ -39,7 +42,7 @@ uint32_t *str_u32(uint8_t *num)
 
 	/*Index 0 will have the size of the array*/
 	u32arr[0] = u32arr_sz;
-	/*The number in the string shall be read from the least significant digit*/
+	/*The number in the string will be read from the least significant digit*/
 	for (h = 1, g = (len - 1); h <= u32arr_sz && g >= 0; h++)
 	{
 		for (i = 0; i < U32_DIGITS && (g - i) >= 0; i++)
@@ -57,7 +60,7 @@ uint32_t *str_u32(uint8_t *num)
  *
  * Description: This function converts an array of unsigned 32 bit integers
  * to a string.
- * The array shall be in little endian style whereby the lower value numbers
+ * The array should be in little endian style whereby the lower value numbers
  * will be placed in the lower indices. Index 0 will have a value greater
  * than 0 indicating the size of the array.
  *
