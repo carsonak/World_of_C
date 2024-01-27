@@ -1,3 +1,3 @@
 # A Practice Repo For C
 
-This repo contains small practice scripts and
+This repo contains small practice scripts
