@@ -13,7 +13,7 @@ int main(void)
 	int count = 0, backup = 0;
 	char buff[10]; /*Buffer*/
 
-	num = 1024;	 /*Test case*/
+	num = 897389475; /*Test case*/
 	if (num < 0) /*How to convert to unsigned int????*/
 		num = -num;
 

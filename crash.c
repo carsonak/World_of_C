@@ -8,7 +8,7 @@
  */
 int main(void)
 {
-	size_t i;
+	size_t i = 0;
 
 	/*printf("(void *)i ==> %p\n", (void *)i);*/
 	for (; i < 100000000000000;)

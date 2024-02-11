@@ -18,6 +18,7 @@ int is_prime_helper(int n, int divide)
 
 	return (is_prime_helper(n, divide + 1));
 }
+
 /**
  * is_prime_number - entry function
  * @n: prime number
@@ -25,7 +26,6 @@ int is_prime_helper(int n, int divide)
  */
 int is_prime_number(int n)
 {
-
 	return (is_prime_helper(n, 2));
 }
 

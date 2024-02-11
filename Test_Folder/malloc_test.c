@@ -2,6 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * main - copy args into a malloced pointer
+ * @argc: no of args
+ * @argv: args
+ *
+ * Return: 0
+ */
 int main(int argc, char *argv[])
 {
 	char *array;
