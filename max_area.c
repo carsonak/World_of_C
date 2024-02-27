@@ -9,35 +9,27 @@
  */
 int maxArea(int *height, int heightSize)
 {
-	int g = 0, max_mid = 0;
-	int mA_right = heightSize - 1, mA_left = 0, area = 0;
+	int g = 0, h = 0, area = 0, width = 0, length = 0;
 
-	/*Find the largest value in the array*/
 	for (g = 0; g < heightSize; g++)
-		if (height[g] > height[max_mid])
-			max_mid = g;
-
-	if (height[max_mid] == 0)
-		return (0);
-
-	/*Check the left side of the array*/
-	for (g = 0; g < max_mid; g++)
 	{
-		if (height[g] * (max_mid - g) > area)
+		for (h = 0; h < heightSize; h++)
 		{
-			mA_left = g;
-			area = height[mA_left] * (max_mid - mA_left);
-		}
-	}
+			if (h == g)
+				continue;
 
-	/*Check the right side of the array*/
-	area = 0;
-	for (g = max_mid + 1; g < heightSize; g++)
-	{
-		if (height[g] * (g - max_mid) > area)
-		{
-			mA_right = g;
-			area = height[mA_right] * (mA_right - max_mid);
+			if (height[g] < height[h])
+				width = height[g];
+			else
+				width = height[h];
+
+			if (h < g)
+				length = g - h;
+			else
+				length = h - g;
+
+			if (width * length > area)
+				area = width * length;
 		}
 	}
 
@@ -51,7 +43,9 @@ int maxArea(int *height, int heightSize)
  */
 int main(void)
 {
-	int arr[] = {1, 2, 1};
+	int arr[] = {1, 2, 1, 4, 6, 7, 3, 8, 2, 9, 3, 8, 5};
+	/*int arr[] = {1, 2, 4, 3};*/
+	/*int arr[] = {1, 2, 1};*/
 
 	printf("%d\n", maxArea(arr, sizeof(arr) / sizeof(arr[0])));
 	return (0);
