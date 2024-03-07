@@ -13,21 +13,14 @@ int maxArea(int *height, int heightSize)
 
 	for (g = 0; g < heightSize; g++)
 	{
-		for (h = 0; h < heightSize; h++)
+		for (h = heightSize - 1; h > g; h--)
 		{
-			if (h == g)
-				continue;
-
 			if (height[g] < height[h])
 				width = height[g];
 			else
 				width = height[h];
 
-			if (h < g)
-				length = g - h;
-			else
-				length = h - g;
-
+			length = h - g;
 			if (width * length > area)
 				area = width * length;
 		}
@@ -43,9 +36,9 @@ int maxArea(int *height, int heightSize)
  */
 int main(void)
 {
-	int arr[] = {1, 2, 1, 4, 6, 7, 3, 8, 2, 9, 3, 8, 5};
-	/*int arr[] = {1, 2, 4, 3};*/
-	/*int arr[] = {1, 2, 1};*/
+	int arr[] = {1, 2, 1, 4, 6, 7, 3, 8, 2, 9, 3, 8, 5}; /*42*/
+	/*int arr[] = {1, 2, 4, 3};*/						 /*4*/
+	/*int arr[] = {1, 2, 1};*/							 /*2*/
 
 	printf("%d\n", maxArea(arr, sizeof(arr) / sizeof(arr[0])));
 	return (0);
