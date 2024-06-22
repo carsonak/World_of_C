@@ -6,8 +6,8 @@
 #include <string.h>
 #include <error.h>
 
-#if __has_attribute(nonnull);
-#define ATTR_NONNULL __attribute__((nonnull));
+#if __has_attribute(nonnull)
+#define ATTR_NONNULL __attribute__((nonnull))
 #else
 #define ATTR_NONNULL
 #endif
@@ -37,12 +37,12 @@ typedef struct HashMap
 	Bucket **array;
 } HashMap;
 
-HashMap *hash_map_create(size_t size);
-void hash_map_delete(HashMap *ht);
+HashMap *hashmap_create(size_t size);
+void hashmap_delete(HashMap *ht);
 size_t get_index(str_literal key, size_t size);
-Bucket *hash_map_get(const HashMap *ht, str_literal key);
+Bucket *hashmap_get(const HashMap *ht, str_literal key);
 void *add_bucket_head(Bucket **h, const char *key, const char *val);
-int hash_map_insert(HashMap *ht, const char *key, const char *value);
-void hash_map_print(const HashMap *ht);
+int hashmap_insert(HashMap *ht, const char *key, const char *value);
+void hashmap_print(const HashMap *ht);
 
 #endif /*HASHMAP_H*/
