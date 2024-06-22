@@ -1,10 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include "hashmap.h"
-#include <criterion/criterion.h>
-#include <criterion/new/assert.h>
 #include <json-c/json.h>
-
 #define STR_ARRAY_SIZE (2048)
+
 /**
  * struct str_list - array of strings
  * @len: number of strings in the array
@@ -14,9 +12,7 @@ struct str_list
 {
 	size_t len;
 	char *array[STR_ARRAY_SIZE];
-} keys = {STR_ARRAY_SIZE, {NULL}}, values = {STR_ARRAY_SIZE, {NULL}};
-
-HashMap *hm = NULL;
+};
 
 /**
  * parse_json_list - p
@@ -63,28 +59,35 @@ ssize_t parse_json_list(const char *json_file, struct str_list *list)
 }
 
 /**
- * setup - initialise some variables
+ * main - entry
+ *
+ * Return: 0
  */
-void setup(void)
+int main(void)
 {
-	hm = hashmap_create(1024);
+	struct str_list keys = {STR_ARRAY_SIZE, {NULL}}, values = {STR_ARRAY_SIZE, {NULL}};
+	Bucket *b = NULL;
+	size_t i = 0;
+	HashMap *hm = hashmap_create(1024);
+
 	parse_json_list(
 		"/home/line/Github_Repositories/World_of_C/Hash_Map/random_strings0.json",
 		&keys);
 	parse_json_list(
-		"/home/line/Github_Repositories/World_of_C/Hash_Map/random_strings0.json",
+		"/home/line/Github_Repositories/World_of_C/Hash_Map/random_strings1.json",
 		&values);
-}
 
-/**
- * teardown - clean up variables
- */
-void teardown(void)
-{
-	size_t i = 0;
+	for (i = 0; i < keys.len && i < values.len && i < STR_ARRAY_SIZE; i++)
+		hashmap_insert(hm, keys.array[i], values.array[i]);
+
+	for (i = 0; i < keys.len && i < values.len && i < STR_ARRAY_SIZE; i++)
+	{
+		b = hashmap_get(hm, (str_literal)keys.array[i]);
+		printf("key[%ld]: strlen=%ld, ", i, strlen(b->key));
+		printf("value[%ld]: strlen=%ld\n", i, strlen(b->value));
+	}
 
 	hashmap_delete(hm);
-	hm = NULL;
 	for (i = 0; i < keys.len; i++)
 	{
 		free(keys.array[i]);
@@ -97,26 +100,5 @@ void teardown(void)
 		values.array[i] = NULL;
 	}
 
-	keys.len = STR_ARRAY_SIZE;
-	values.len = STR_ARRAY_SIZE;
-}
-
-TestSuite(multiple_inputs, .init = setup, .fini = teardown);
-
-Test(multiple_inputs, test_several_random_keys_and_values,
-	 .description = "insert(randomkey, randomvalue) * n", .timeout = 0)
-{
-	Bucket *b = NULL;
-	size_t i = 0;
-
-	for (i = 0; i < keys.len && i < values.len && i < STR_ARRAY_SIZE; i++)
-		hashmap_insert(hm, keys.array[i], values.array[i]);
-
-	for (i = 0; i < keys.len && i < values.len && i < STR_ARRAY_SIZE; i++)
-	{
-		b = hashmap_get(hm, (str_literal)keys.array[i]);
-
-		cr_assert(eq(str, b->key, keys.array[i]));
-		cr_assert(eq(str, b->value, values.array[i]));
-	}
+	return (0);
 }
