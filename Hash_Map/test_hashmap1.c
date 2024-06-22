@@ -47,6 +47,13 @@ ssize_t parse_json_list(const char *json_file, struct str_list *list)
 		if (json_object_is_type(node, json_type_string))
 		{
 			list->array[list->len] = strdup(json_object_get_string(node));
+			if (!list->array[list->len])
+			{
+				perror("Failed to copy string.");
+				json_object_put(root);
+				return (-1);
+			}
+
 			list->len++;
 		}
 	}
@@ -78,13 +85,13 @@ void teardown(void)
 
 	hashmap_delete(hm);
 	hm = NULL;
-	for (i = 0; keys.array[i]; i++)
+	for (i = 0; i < keys.len; i++)
 	{
 		free(keys.array[i]);
 		keys.array[i] = NULL;
 	}
 
-	for (i = 0; values.array[i]; i++)
+	for (i = 0; i < values.len; i++)
 	{
 		free(values.array[i]);
 		values.array[i] = NULL;
@@ -102,10 +109,10 @@ Test(multiple_inputs, test_several_random_keys_and_values,
 	Bucket *b = NULL;
 	size_t i = 0;
 
-	for (i = 0; keys.array[i] && values.array[i]; i++)
+	for (i = 0; i < keys.len && i < values.len && i < STR_ARRAY_SIZE; i++)
 		hashmap_insert(hm, keys.array[i], values.array[i]);
 
-	for (i = 0; keys.array[i] && values.array[i]; i++)
+	for (i = 0; i < keys.len && i < values.len && i < STR_ARRAY_SIZE; i++)
 	{
 		b = hashmap_get(hm, (str_literal)keys.array[i]);
 
