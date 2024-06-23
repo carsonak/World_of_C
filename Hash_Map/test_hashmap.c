@@ -29,7 +29,7 @@ Test(null_inputs, test_create_zero_sized_hashmap,
 	hashmap_delete(hm);
 	hm = hashmap_create(0);
 
-	cr_assert(zero(ptr, hm));
+	cr_assert(zero(ptr, hm->array));
 }
 
 Test(null_inputs, test_insert_nullkey_nullvalue,

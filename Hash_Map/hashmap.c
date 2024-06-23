@@ -10,9 +10,9 @@ static size_t hash_djb2(str_literal str) ATTR_NONNULL;
  */
 HashMap *hashmap_create(size_t size)
 {
-	HashMap *table = size ? calloc(1, sizeof(*table)) : NULL;
+	HashMap *table = calloc(1, sizeof(*table));
 
-	if (table)
+	if (table && size)
 	{
 		table->size = size;
 		table->array = calloc(size, sizeof(*(table->array)));
