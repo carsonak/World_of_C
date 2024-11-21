@@ -14,8 +14,8 @@
  */
 typedef struct stack
 {
-    size_t size;
-    struct single_link_node *top;
+	size_t size;
+	single_link_nd *top;
 } stack;
 
 single_link_nd *push(stack *s, void *data);

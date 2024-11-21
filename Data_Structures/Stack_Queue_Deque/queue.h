@@ -16,8 +16,8 @@
 struct queue
 {
 	size_t size;
-	struct double_link_node *head;
-	struct double_link_node *tail;
+	double_link_nd *head;
+	double_link_nd *tail;
 };
 
 typedef struct queue queue;

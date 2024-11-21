@@ -81,7 +81,7 @@ void clear_stack(stack *s, void (*free_data)(void *))
  */
 void print_stack(stack *s, void (*print_data)(void *))
 {
-	double_link_nd *walk = NULL;
+	single_link_nd *walk = NULL;
 
 	if (!s)
 		return;
