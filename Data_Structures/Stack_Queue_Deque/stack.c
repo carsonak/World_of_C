@@ -1,7 +1,19 @@
+#include "linked_lists.h"
 #include "stack.h"
 
 /**
- * push - push an item onto a stack.
+ * struct stack - a stack data structure.
+ * @size: the number of nodes in the stack.
+ * @top: pointer to the top of the stack.
+ */
+struct stack
+{
+	size_t size;
+	single_link_node *top;
+};
+
+/**
+ * push - push an item onto a.
  * @s: the stack to operate on.
  * @data: data that will be stored in the node.
  *
@@ -81,7 +93,7 @@ void clear_stack(stack *s, void (*free_data)(void *))
  */
 void print_stack(stack *s, void (*print_data)(void *))
 {
-	double_link_nd *walk = NULL;
+	double_link_node *walk = NULL;
 
 	if (!s)
 		return;

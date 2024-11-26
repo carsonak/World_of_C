@@ -1,4 +1,10 @@
+# vscode configs
 .vscode
+
+# replit
 .replit
 replit.nix
 .ccls-cache
+
+# binary files.
+**/bin/*
