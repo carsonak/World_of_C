@@ -1,32 +1,64 @@
-#include "queue.h"
+#include "queues.h"
+
+/**
+ * struct queue - a queue data structure.
+ * @size: number items in the queue.
+ * @head: a pointer to the head of the queue.
+ * @tail: a pointer to the tail of the queue.
+ */
+struct queue
+{
+	size_t size;
+	double_link_node *head;
+	double_link_node *tail;
+};
+
+/**
+ * queue_new - allocate memory for an empty queue.
+ *
+ * Return: pointer to the new queue, NULL on failure.
+ */
+queue *queue_new(void) { return (calloc(1, sizeof(queue))); }
+
+/**
+ * queue_len - return total items in the queue.
+ * @q: pointer to the queue.
+ *
+ * Return: total items in the queue.
+ */
+size_t queue_len(queue *q)
+{
+	if (!q)
+		return (0);
+
+	return (q->size);
+}
 
 /**
  * enqueue - add an item to the end of a queue.
  * @q: the queue to operate on.
  * @data: data that the node will store.
+ * @copy_data: function that returns a separate copy of data,
+ * if NULL a simple copy of the pointer to data is done.
  *
  * Return: pointer to the newly added node, NULL if q is NULL or failure.
  */
-double_link_nd *enqueue(queue *q, void *data)
+double_link_node *enqueue(
+	queue *const q, void *const data, copy_func *copy_data)
 {
-	double_link_nd *nw = NULL;
+	double_link_node *nw = NULL;
 
 	if (!q)
 		return (NULL);
 
-	nw = calloc(1, sizeof(*nw));
+	nw = dln_new(data, copy_data);
 	if (!nw)
 		return (NULL);
 
-	nw->data = data;
-	nw->prev = q->tail;
-	if (q->tail)
-		q->tail->next = nw;
-
+	q->tail = dln_insert_after(q->tail, nw);
 	if (!q->head)
 		q->head = nw;
 
-	q->tail = nw;
 	q->size++;
 	return (nw);
 }
@@ -37,18 +69,17 @@ double_link_nd *enqueue(queue *q, void *data)
  *
  * Return: pointer to the data in the popped node, NULL if q or head is NULL.
  */
-void *dequeue(queue *q)
+void *dequeue(queue *const q)
 {
-	double_link_nd *p = NULL;
+	double_link_node *node = NULL;
 	void *d = NULL;
 
 	if (!q || !q->head)
 		return (NULL);
 
-	p = q->head;
-	d = q->head->data;
-	q->head = q->head->next;
-	free(p);
+	node = q->head;
+	q->head = dln_get_next(node);
+	d = dln_remove(node);
 	if (!q->head)
 		q->tail = NULL;
 
@@ -63,61 +94,121 @@ void *dequeue(queue *q)
  * @q: the queue to operate on.
  * @free_data: pointer to a function that will be called to free data in nodes.
  */
-void clear_queue(queue *q, void (*free_data)(void *))
+static void clear_queue(queue *const q, delete_func *free_data)
 {
+	double_link_node *next_node = NULL;
+
 	if (!q || !q->head)
 		return;
 
-	while (q->head->next)
+	next_node = dln_get_next(q->head);
+	while (next_node)
 	{
 		if (free_data)
-			(*free_data)(q->head->data);
+			free_data(dln_remove(q->head));
 
-		q->head = q->head->next;
-		free(q->head->prev);
+		q->head = next_node;
+		next_node = dln_get_next(q->head);
 	}
 
 	if (free_data)
-		(*free_data)(q->head->data);
+		free_data(dln_remove(q->head));
 
-	free(q->head);
 	q->head = NULL;
 	q->tail = NULL;
 	q->size = 0;
 }
 
 /**
- * print_queue - print all nodes of a queue.
+ * queue_delete - frees a queue from memory.
+ * @nullable_ptr: pointer to the queue to delete.
+ * @free_data: pointer to a function that can free data in the queue.
+ *
+ * Return: NULL always.
+ */
+void *queue_delete(queue *const nullable_ptr, delete_func *free_data)
+{
+	clear_queue(nullable_ptr, free_data);
+	free(nullable_ptr);
+	return (NULL);
+}
+
+/**
+ * queue_from_array - create a new queue from an array of objects.
+ * @data_array: the array of objects.
+ * @len: the size of the array.
+ * @copy_data: function that will be used to copy the objects.
+ * @delete_data: function that will be used to delete objects on failure.
+ *
+ * Return: pointer to the new queue, NULL on failure.
+ */
+queue *queue_from_array(
+	void *const *const data_array, const size_t len,
+	copy_func *copy_data, delete_func *delete_data)
+{
+	queue *new_q = NULL;
+
+	if (!data_array || len == 0)
+		return (NULL);
+
+	if (copy_data && !delete_data)
+		return (NULL);
+
+	new_q = queue_new();
+	if (!new_q)
+		return (NULL);
+
+	for (size_t i = 0; i < len; i++)
+	{
+		void *data = data_array[i];
+
+		if (copy_data)
+			data = copy_data(data);
+
+		if (!data || !enqueue(new_q, data, copy_data))
+		{
+			new_q = queue_delete(new_q, delete_data);
+			break;
+		}
+	}
+
+	return (new_q);
+}
+
+/**
+ * queue_print - print all nodes of a queue.
  * @q: the queue to print.
  * @print_data: function that will be called to print data in nodes.
  */
-void print_queue(queue *q, void (*print_data)(void *))
+void queue_print(const queue *q, print_func *print_data)
 {
-	double_link_nd *walk = NULL;
+	double_link_node const *walk = NULL;
 
 	if (!q)
 		return;
 
 	if (!q->head)
+	{
 		printf("(NULL)\n");
+		return;
+	}
 
+	walk = q->head;
 	if (print_data)
-		(*print_data)(q->head->data);
+		print_data(dln_get_data(walk));
 	else
-		printf("%p", q->head);
+		printf("%p", dln_get_data(walk));
 
-	walk = q->head->next;
+	walk = dln_get_next(walk);
 	while (walk)
 	{
+		printf(" --> ");
 		if (print_data)
-		{
-			printf(" --> ");
-			(*print_data)(walk->data);
-		}
+			print_data(dln_get_data(walk));
 		else
-			printf(" --> %p", walk->data);
+			printf("%p", dln_get_data(walk));
 
-		walk = walk->next;
+		walk = dln_get_next(walk);
 	}
 
 	printf("\n");

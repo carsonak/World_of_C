@@ -1,4 +1,18 @@
-#include "queue.h"
+#include "linked_lists.h"
+#include "queues.h"
+
+/**
+ * struct deque - a queue data structure.
+ * @size: number items in the queue.
+ * @head: a pointer to the head of the queue.
+ * @tail: a pointer to the tail of the queue.
+ */
+struct deque
+{
+	size_t size;
+	struct double_link_node *head;
+	struct double_link_node *tail;
+};
 
 /**
  * push_head - push an item to the head of the deque.
@@ -7,9 +21,9 @@
  *
  * Return: pointer to the newly added node, NULL if dq is NULL or failure.
  */
-double_link_nd *push_head(deque *dq, void *data)
+double_link_node *push_head(deque *dq, void *data)
 {
-	double_link_nd *nw = NULL;
+	double_link_node *nw = NULL;
 
 	if (!dq)
 		return (NULL);
@@ -38,9 +52,9 @@ double_link_nd *push_head(deque *dq, void *data)
  *
  * Return: pointer to the newly added node, NULL if dq is NULL or failure.
  */
-double_link_nd *push_tail(deque *dq, void *data)
+double_link_node *push_tail(deque *dq, void *data)
 {
-	double_link_nd *nw = NULL;
+	double_link_node *nw = NULL;
 
 	if (!dq)
 		return (NULL);
@@ -70,7 +84,7 @@ double_link_nd *push_tail(deque *dq, void *data)
  */
 void *pop_head(deque *dq)
 {
-	double_link_nd *p = NULL;
+	double_link_node *p = NULL;
 	void *d = NULL;
 
 	if (!dq || !dq->head)
@@ -97,7 +111,7 @@ void *pop_head(deque *dq)
  */
 void *pop_tail(deque *dq)
 {
-	double_link_nd *p = NULL;
+	double_link_node *p = NULL;
 	void *d = NULL;
 
 	if (!dq || !dq->tail)
@@ -151,7 +165,7 @@ void clear_deque(deque *dq, void (*free_data)(void *))
  */
 void print_deque(deque *dq, void (*print_data)(void *))
 {
-	double_link_nd *walk = NULL;
+	double_link_node *walk = NULL;
 
 	if (!dq)
 		return;

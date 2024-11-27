@@ -1,28 +1,39 @@
 #ifndef LINKED_LISTS_H
 #define LINKED_LISTS_H
 
-/**
- * struct single_link_node - a singly linked list node.
- * @next: pointer to the next node.
- * @data: data that the node holds.
- */
-typedef struct single_link_node
-{
-	void *data;
-	struct single_link_node *next;
-} single_link_nd;
+#include <stdlib.h> /* *alloc */
 
 /**
- * struct double_link_node - a doubly linked list node.
- * @next: pointer to the next node.
- * @prev: pointer to the previous node.
- * @data: data that the node holds.
+ * copy_func - a function that returns a copy of an object, NULL on failure.
  */
-typedef struct double_link_node
-{
-	void *data;
-	struct double_link_node *next;
-	struct double_link_node *prev;
-} double_link_nd;
+typedef void *(copy_func)(void *const);
+
+/**
+ * delete_func - a function that deletes an object.
+ */
+typedef void(delete_func)(void *const);
+
+/*singly linked list*/
+
+typedef struct single_link_node single_link_node;
+
+single_link_node *sln_new(void *const data, copy_func *copy_data);
+single_link_node *sln_insert_after(
+	single_link_node *const node, single_link_node *const this_node);
+void *sln_remove(single_link_node *node);
+void *sln_get_data(const single_link_node *node);
+single_link_node *sln_get_next(const single_link_node *node);
+
+/*doubly linked list*/
+
+typedef struct double_link_node double_link_node;
+
+double_link_node *dln_new(void *const data, copy_func *copy_data);
+double_link_node *dln_insert_after(
+	double_link_node *const this_node, double_link_node *const node);
+void *dln_remove(double_link_node *node);
+void *dln_get_data(const double_link_node *node);
+double_link_node *dln_get_next(const double_link_node *node);
+double_link_node *dln_get_previous(const double_link_node *node);
 
 #endif /* LINKED_LISTS_H */
