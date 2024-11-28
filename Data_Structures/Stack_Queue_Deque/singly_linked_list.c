@@ -16,12 +16,12 @@ struct single_link_node
 /**
  * sln_new - allocates memory for a single link node and initialises it.
  * @data: the object to initialise with.
- * @copy_data: function that returns a separate copy of data,
+ * @duplicate_data: function that returns a separate copy of data,
  * if NULL a simple copy of the pointer to data is done.
  *
  * Return: pointer to the node, NULL on failure.
  */
-single_link_node *sln_new(void *const data, copy_func *copy_data)
+single_link_node *sln_new(void *const data, dup_func *duplicate_data)
 {
 	single_link_node *new_node = calloc(1, sizeof(*new_node));
 
@@ -29,9 +29,9 @@ single_link_node *sln_new(void *const data, copy_func *copy_data)
 		return (NULL);
 
 	new_node->data = data;
-	if (copy_data)
+	if (duplicate_data)
 	{
-		new_node->data = copy_data(data);
+		new_node->data = duplicate_data(data);
 		if (!new_node->data)
 		{
 			free(new_node);

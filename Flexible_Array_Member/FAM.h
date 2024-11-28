@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h> /*offsetof*/
+
+#define report(x) printf(#x ": %zu\n", x)
 
 #if __has_attribute(counted_by)
 #define ATTR_COUNTED_BY(member) __attribute__((counted_by(member)))
@@ -22,17 +25,7 @@ struct String
 	char str[] ATTR_COUNTED_BY(len);
 };
 
-/*The following structure will not work as expected as FAMs cannot be nested*/
-
-/**
- * struct Catalogue_nested - array of names
- * @size: length of the catalogue
- * @list: array of strings
- */
-struct Catalogue_nested
-{
-	size_t size;
-	struct String list[] ATTR_COUNTED_BY(size);
-};
+/*According to ISO C11: Structs with Flexible Array Members cannot be */
+/*contained in arrays or other structs.*/
 
 #endif /*FAM_H*/

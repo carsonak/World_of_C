@@ -1,6 +1,11 @@
 BINDIR := bin
 CC := gcc
-CFLAGS := --std=c17 -Wall -Wextra -Werror -Og -g3 -fsanitize=address -fsanitize=undefined
+STANDARD := --std=c17
+WFLAGS := -Wall -Wextra -pedantic -Werror
+OPTIMISATION := -Og
+DEBUG := -g3
+SANITIZER := -fsanitize=address -fsanitize=undefined
+CFLAGS = $(STANDARD) $(WFLAGS) $(OPTIMISATION) $(DEBUG) $(SANITIZER)
 
 
 $(BINDIR)/%: %.c bin

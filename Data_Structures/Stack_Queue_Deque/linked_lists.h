@@ -4,9 +4,9 @@
 #include <stdlib.h> /* *alloc */
 
 /**
- * copy_func - a function that returns a copy of an object, NULL on failure.
+ * dup_func - a function that returns a copy of an object, NULL on failure.
  */
-typedef void *(copy_func)(void *const);
+typedef void *(dup_func)(void *const);
 
 /**
  * delete_func - a function that deletes an object.
@@ -17,7 +17,7 @@ typedef void(delete_func)(void *const);
 
 typedef struct single_link_node single_link_node;
 
-single_link_node *sln_new(void *const data, copy_func *copy_data);
+single_link_node *sln_new(void *const data, dup_func *duplicate_data);
 single_link_node *sln_insert_after(
 	single_link_node *const node, single_link_node *const this_node);
 void *sln_remove(single_link_node *node);
@@ -28,7 +28,7 @@ single_link_node *sln_get_next(const single_link_node *node);
 
 typedef struct double_link_node double_link_node;
 
-double_link_node *dln_new(void *const data, copy_func *copy_data);
+double_link_node *dln_new(void *const data, dup_func *duplicate_data);
 double_link_node *dln_insert_after(
 	double_link_node *const this_node, double_link_node *const node);
 void *dln_remove(double_link_node *node);

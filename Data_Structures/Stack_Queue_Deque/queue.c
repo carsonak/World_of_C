@@ -38,20 +38,20 @@ size_t queue_len(queue *q)
  * enqueue - add an item to the end of a queue.
  * @q: the queue to operate on.
  * @data: data that the node will store.
- * @copy_data: function that returns a separate copy of data,
+ * @duplicate_data: function that returns a separate copy of data,
  * if NULL a simple copy of the pointer to data is done.
  *
  * Return: pointer to the newly added node, NULL if q is NULL or failure.
  */
 double_link_node *enqueue(
-	queue *const q, void *const data, copy_func *copy_data)
+	queue *const q, void *const data, dup_func *duplicate_data)
 {
 	double_link_node *nw = NULL;
 
 	if (!q)
 		return (NULL);
 
-	nw = dln_new(data, copy_data);
+	nw = dln_new(data, duplicate_data);
 	if (!nw)
 		return (NULL);
 
@@ -137,21 +137,21 @@ void *queue_delete(queue *const nullable_ptr, delete_func *free_data)
  * queue_from_array - create a new queue from an array of objects.
  * @data_array: the array of objects.
  * @len: the size of the array.
- * @copy_data: function that will be used to copy the objects.
+ * @duplicate_data: function that will be used to copy the objects.
  * @delete_data: function that will be used to delete objects on failure.
  *
  * Return: pointer to the new queue, NULL on failure.
  */
 queue *queue_from_array(
-	void *const *const data_array, const size_t len,
-	copy_func *copy_data, delete_func *delete_data)
+	void *const data_array, const size_t len,
+	dup_func *duplicate_data, delete_func *delete_data)
 {
 	queue *new_q = NULL;
 
 	if (!data_array || len == 0)
 		return (NULL);
 
-	if (copy_data && !delete_data)
+	if (duplicate_data && !delete_data)
 		return (NULL);
 
 	new_q = queue_new();
@@ -160,12 +160,12 @@ queue *queue_from_array(
 
 	for (size_t i = 0; i < len; i++)
 	{
-		void *data = data_array[i];
+		void *data = data_array + (sizeof(*data) * i);
 
-		if (copy_data)
-			data = copy_data(data);
+		if (duplicate_data)
+			data = duplicate_data(data);
 
-		if (!data || !enqueue(new_q, data, copy_data))
+		if (!data || !enqueue(new_q, data, duplicate_data))
 		{
 			new_q = queue_delete(new_q, delete_data);
 			break;

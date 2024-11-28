@@ -1,6 +1,7 @@
+BINDIR := bin
 CC := gcc
-CFLAGS := --std=c17 -Wall -Wextra -Werror -Og -g3 -fsanitize=address -fsanitize=undefined
+CFLAGS := --std=c17 -Wall -Wextra -pendantic -Werror -Og -g3 -fsanitize=address -fsanitize=undefined
 
-bin/test_%: test_%.c %.c doubly_linked_list.c singly_linked_list.c
-	@mkdir -p bin
+$(BINDIR)/test_%: test_%.c %.c doubly_linked_list.c singly_linked_list.c
+	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ -o $@

@@ -7,7 +7,7 @@
 
 #include "linked_lists.h"
 
-typedef void *(copy_func)(void *);
+typedef void *(dup_func)(void *);
 typedef void(delete_func)(void *);
 typedef int(print_func)(void *);
 
@@ -18,12 +18,12 @@ typedef struct queue queue;
 void *queue_delete(queue *const nullable_ptr, delete_func *free_data);
 void *dequeue(queue * const q);
 double_link_node *enqueue(
-	queue *const q, void *const data, copy_func *copy_data);
+	queue *const q, void *const data, dup_func *copy_data);
 queue *queue_new(void);
 void queue_print(const queue *q, print_func *print_data);
 queue *queue_from_array(
-	void *const *const data_array, const size_t len,
-	copy_func *copy_data, delete_func *delete_data);
+	void *const data_array, const size_t len,
+	dup_func *copy_data, delete_func *delete_data);
 size_t queue_len(queue *q);
 
 /*deque*/
