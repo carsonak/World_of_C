@@ -7,6 +7,6 @@ DEBUG := -g3
 SANITIZER := -fsanitize=address -fsanitize=undefined
 CFLAGS = $(STANDARD) $(WFLAGS) $(OPTIMISATION) $(DEBUG) $(SANITIZER)
 
-$(BINDIR)/test_%: test_%.c %.c doubly_linked_list.c singly_linked_list.c
+$(BINDIR)/test_%: test_%.c %.c
 	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ -o $@
