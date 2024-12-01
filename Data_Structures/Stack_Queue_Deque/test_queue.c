@@ -1,28 +1,28 @@
 #include "queues.h"
 
 /**
- * print_int - prints an int.
+ * print_llint - prints an int.
  * @d: pointer to the int.
  *
  * Return: same as printf.
  */
-static int print_int(int *d)
+static int print_llint(FILE *stream, long long int const *const d)
 {
 	if (!d)
-		return (printf("NULL"));
+		return (fprintf(stream, "NULL"));
 
-	return (printf("%d", *d));
+	return (fprintf(stream, "%lld", *d));
 }
 
 /**
- * dup_int - make a copy of an int pointer.
+ * dup_llint - make a copy of an int pointer.
  * @n: pointer to the int.
  *
  * Return: pointer to a new int.
  */
-static int *dup_int(const int *n)
+static long long int *dup_llint(long long int const *const n)
 {
-	int *const ptr = calloc(1, sizeof(*ptr));
+	long long int *const ptr = calloc(1, sizeof(*ptr));
 
 	if (n && ptr)
 		*ptr = *n;
@@ -31,17 +31,48 @@ static int *dup_int(const int *n)
 }
 
 /**
- * create_int_array - create an int array and initialise with a range of values.
+ * print_char - prints a char.
+ * @stream: stream to print out to.
+ * @c: pointer to the char.
+ *
+ * Return: same as printf.
+ */
+static int print_char(FILE *stream, char const *const c)
+{
+	if (!c)
+		return (fprintf(stream, "NULL"));
+
+	return (fprintf(stream, "%c", *c));
+}
+
+/**
+ * dup_char - make a copy of an char pointer.
+ * @c: pointer to the char.
+ *
+ * Return: pointer to a new char.
+ */
+static char *dup_char(char const *const c)
+{
+	char *const ptr = calloc(1, sizeof(*ptr));
+
+	if (c && ptr)
+		*ptr = *c;
+
+	return (ptr);
+}
+
+/**
+ * create_llint_array - create an int array and initialise with a range of values.
  * @len: length of the array to create.
  * @start: starting value.
  * @step: size between each value.
  *
  * Return: pointer to the array, NULL on failure.
  */
-static int *create_int_array(const size_t len, const int start, const int step)
+static long long int *create_llint_array(const size_t len, const long long int start, const long long int step)
 {
-	int c = start;
-	int *new_arr = malloc(len * sizeof(*new_arr));
+	long long int c = start;
+	long long int *new_arr = malloc(len * sizeof(*new_arr));
 
 	if (!new_arr)
 		return (NULL);
@@ -63,18 +94,23 @@ static int *create_int_array(const size_t len, const int start, const int step)
 int main(void)
 {
 	const size_t arr_len = 64;
-	int *arr = create_int_array(arr_len, 1, 1);
-	queue *my_q = queue_from_array((void *)arr, arr_len, (void *(*)(void *))dup_int, free);
+	long long int *arr = create_llint_array(arr_len, 1, 1);
+	queue *my_q = queue_from_array(
+		(void *)arr, arr_len, sizeof(*arr), (dup_func *)dup_llint, free);
 
 	free(arr);
-	queue_print(my_q, (int (*)(void *))print_int);
+	queue_print(stdout, my_q, (print_func *)print_llint);
 	putchar('\n');
 
 	enqueue(my_q, malloc(sizeof(*arr)), NULL);
-	queue_print(my_q, (int (*)(void *))print_int);
+	queue_print(stdout, my_q, (print_func *)print_llint);
 	putchar('\n');
 
 	my_q = queue_delete(my_q, free);
+	char s[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\" #$ % &'()*+,-./:;<=>?@[\\]^_`{|}~";
 
+	my_q = queue_from_array(s, sizeof(s) - 1, sizeof(*s), (dup_func *)dup_char, free);
+	queue_print(stdout, my_q, (print_func *)print_char);
+	my_q = queue_delete(my_q, free);
 	return (0);
 }

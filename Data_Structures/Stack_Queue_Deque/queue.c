@@ -1,3 +1,4 @@
+#include "linked_lists.h"
 #include "queues.h"
 
 /**
@@ -26,7 +27,7 @@ queue *queue_new(void) { return (calloc(1, sizeof(queue))); }
  *
  * Return: total items in the queue.
  */
-size_t queue_len(queue *q)
+size_t queue_len(queue const *const q)
 {
 	if (!q)
 		return (0);
@@ -89,6 +90,8 @@ void *dequeue(queue *const q)
 	return (d);
 }
 
+void *queue_peek(queue const *const q) { return (dln_get_data(q->head)); }
+
 /**
  * clear_queue - delete a queue.
  * @q: the queue to operate on.
@@ -136,14 +139,15 @@ void *queue_delete(queue *const nullable_ptr, delete_func *free_data)
 /**
  * queue_from_array - create a new queue from an array of objects.
  * @data_array: the array of objects.
- * @len: the size of the array.
+ * @len: number of items in the array.
+ * @type_size: size of the type in the array.
  * @duplicate_data: function that will be used to copy the objects.
  * @delete_data: function that will be used to delete objects on failure.
  *
  * Return: pointer to the new queue, NULL on failure.
  */
 queue *queue_from_array(
-	void *const data_array, const size_t len,
+	void *const data_array, const size_t len, const size_t type_size,
 	dup_func *duplicate_data, delete_func *delete_data)
 {
 	queue *new_q = NULL;
@@ -160,12 +164,9 @@ queue *queue_from_array(
 
 	for (size_t i = 0; i < len; i++)
 	{
-		void *data = data_array + (sizeof(*data) * i);
+		void *data = (char *)data_array + (type_size * i);
 
-		if (duplicate_data)
-			data = duplicate_data(data);
-
-		if (!data || !enqueue(new_q, data, duplicate_data))
+		if (!enqueue(new_q, data, duplicate_data))
 		{
 			new_q = queue_delete(new_q, delete_data);
 			break;
@@ -177,10 +178,11 @@ queue *queue_from_array(
 
 /**
  * queue_print - print all nodes of a queue.
+ * @stream: pointer to the stream to output to.
  * @q: the queue to print.
  * @print_data: function that will be called to print data in nodes.
  */
-void queue_print(const queue *q, print_func *print_data)
+void queue_print(FILE *stream, queue const *const q, print_func *print_data)
 {
 	double_link_node const *walk = NULL;
 
@@ -189,27 +191,28 @@ void queue_print(const queue *q, print_func *print_data)
 
 	if (!q->head)
 	{
-		printf("(NULL)\n");
+		fprintf(stream, "(NULL)\n");
 		return;
 	}
 
+	/*WARNING: need to check return values of the printing functions.*/
 	walk = q->head;
 	if (print_data)
-		print_data(dln_get_data(walk));
+		print_data(stream, dln_get_data(walk));
 	else
-		printf("%p", dln_get_data(walk));
+		fprintf(stream, "%p", dln_get_data(walk));
 
 	walk = dln_get_next(walk);
 	while (walk)
 	{
-		printf(" --> ");
+		fprintf(stream, " --> ");
 		if (print_data)
-			print_data(dln_get_data(walk));
+			print_data(stream, dln_get_data(walk));
 		else
-			printf("%p", dln_get_data(walk));
+			fprintf(stream, "%p", dln_get_data(walk));
 
 		walk = dln_get_next(walk);
 	}
 
-	printf("\n");
+	fprintf(stream, "\n");
 }

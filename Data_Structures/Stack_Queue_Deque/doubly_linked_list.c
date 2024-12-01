@@ -73,7 +73,7 @@ double_link_node *dln_insert_after(
  *
  * Return: pointer to the data of the node.
  */
-void *dln_remove(double_link_node *node)
+void *dln_remove(double_link_node *const node)
 {
 	void *d = NULL;
 
@@ -100,7 +100,7 @@ void *dln_remove(double_link_node *node)
  *
  * Return: pointer to the data.
  */
-void *dln_get_data(const double_link_node *node)
+void *dln_get_data(double_link_node const *const node)
 {
 	if (!node)
 		return (NULL);
@@ -114,7 +114,7 @@ void *dln_get_data(const double_link_node *node)
  *
  * Return: pointer to the next node.
  */
-double_link_node *dln_get_next(const double_link_node *node)
+double_link_node *dln_get_next(double_link_node const *const node)
 {
 	if (!node)
 		return (NULL);
@@ -128,10 +128,73 @@ double_link_node *dln_get_next(const double_link_node *node)
  *
  * Return: pointer to the previous node.
  */
-double_link_node *dln_get_previous(const double_link_node *node)
+double_link_node *dln_get_previous(double_link_node const *const node)
 {
 	if (!node)
 		return (NULL);
 
 	return (node->prev);
+}
+
+/**
+ * dll_print - print all nodes of a doubly linked list.
+ * @stream: pointer to a stream to output to.
+ * @head: head of the doubly linked list to print.
+ * @print_data: function that will be called to print data in nodes.
+ */
+void dll_print(FILE *stream, double_link_node const *const head, print_func *print_data)
+{
+	if (!head)
+		return;
+
+	double_link_node const *walk = head;
+	/*WARNING: need to check return values of printing functions.*/
+	if (print_data)
+		print_data(stream, dln_get_data(walk));
+	else
+		fprintf(stream, "%p", dln_get_data(walk));
+
+	walk = dln_get_next(walk);
+	while (walk)
+	{
+		printf(" --> ");
+		if (print_data)
+			print_data(stream, dln_get_data(walk));
+		else
+			fprintf(stream, "%p", dln_get_data(walk));
+
+		walk = dln_get_next(walk);
+	}
+
+	fprintf(stream, "\n");
+}
+
+/**
+ * dll_clear - delete a doubly linked list from memory.
+ * @head: pointer to the head of the doubly linked list.
+ * @free_data: function that will be called to free data in the nodes.
+ *
+ * Return: NULL always.
+ */
+void *dll_clear(double_link_node *const head, delete_func *free_data)
+{
+	if (!head)
+		return (NULL);
+
+	double_link_node *walk = head;
+	void *data = NULL;
+
+	while (walk->next)
+	{
+		walk = dln_get_next(walk);
+		data = dln_remove(walk->prev);
+		if (free_data)
+			free_data(data);
+	}
+
+	data = dln_remove(walk);
+	if (free_data)
+		free_data(data);
+
+	return (NULL);
 }
