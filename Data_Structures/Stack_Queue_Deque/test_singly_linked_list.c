@@ -92,32 +92,32 @@ static bool isvowel(const char c)
  *
  * Return: pointer to the new head.
  */
-static double_link_node *filter_vowels_and_digits(double_link_node *head)
+static single_link_node *filter_vowels_and_digits(single_link_node *head)
 {
-	double_link_node *walk = head;
+	single_link_node *walk = head;
 
-	while (dln_get_next(walk))
+	while (sln_get_next(walk))
 	{
-		walk = dln_get_next(walk);
-		char c = *((char *)dln_get_data(dln_get_previous(walk)));
+		single_link_node *prev = walk;
+
+		walk = sln_get_next(walk);
+		char c = *((char *)sln_get_data(prev));
 
 		if (!isdigit(c) && !isvowel(c))
 		{
-			double_link_node *prev = dln_get_previous(walk);
-
 			if (prev == head)
 				head = walk;
 
-			dln_remove(prev);
+			sln_remove(prev);
 		}
 	}
 
-	if (!isdigit(*((char *)dln_get_data(walk))) || !isvowel(*((char *)dln_get_data(walk))))
+	if (!isdigit(*((char *)sln_get_data(walk))) || !isvowel(*((char *)sln_get_data(walk))))
 	{
 		if (head == walk)
 			head = NULL;
 
-		dln_remove(walk);
+		sln_remove(walk);
 	}
 
 	return (head);
@@ -130,31 +130,31 @@ static double_link_node *filter_vowels_and_digits(double_link_node *head)
  */
 int main(void)
 {
-	double_link_node *head = NULL, *walk = NULL;
+	single_link_node *head = NULL, *walk = NULL;
 	char s[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\" #$ % &'()*+,-./:;<=>?@[\\]^_`{|}~";
 
-	head = dln_new(s, NULL);
+	head = sln_new(s, NULL);
 	walk = head;
 	for (size_t i = 1; i < (sizeof(s) / sizeof(*s)) - 1; i++)
-		walk = dln_insert_after(walk, dln_new(s + i, NULL));
+		walk = sln_insert_after(walk, sln_new(s + i, NULL));
 
-	dll_print(stdout, head, (print_func *)print_char);
+	sll_print(stdout, head, (print_func *)print_char);
 	putchar('\n');
 
 	head = filter_vowels_and_digits(head);
-	dll_print(stdout, head, (print_func *)print_char);
+	sll_print(stdout, head, (print_func *)print_char);
 	putchar('\n');
 
 	head = sll_clear(head, NULL);
 	const size_t arr_len = 64;
 	long long int *arr = create_llint_array(arr_len, LLONG_MIN, 4294967296);
 
-	head = dln_new(arr, (dup_func *)dup_llint);
+	head = sln_new(arr, (dup_func *)dup_llint);
 	walk = head;
 	for (size_t i = 1; i < arr_len; i++)
-		walk = dln_insert_after(walk, dln_new(&arr[i], (dup_func *)dup_llint));
+		walk = sln_insert_after(walk, sln_new(&arr[i], (dup_func *)dup_llint));
 
-	dll_print(stdout, head, (print_func *)print_llint);
+	sll_print(stdout, head, (print_func *)print_llint);
 	free(arr);
 	head = sll_clear(head, free);
 	return (0);
