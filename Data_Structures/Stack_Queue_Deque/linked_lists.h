@@ -26,9 +26,11 @@ typedef struct single_link_node single_link_node;
 single_link_node *sln_new(void *const data, dup_func *duplicate_data);
 single_link_node *sln_insert_after(
 	single_link_node *const node, single_link_node *const this_node);
-void *sln_remove(single_link_node *node);
+void *sln_remove(single_link_node *const node);
 void *sln_get_data(single_link_node const *const node);
 single_link_node *sln_get_next(single_link_node const *const node);
+void sll_print(FILE *stream, single_link_node const *const head, print_func *print_data);
+void *sll_clear(single_link_node *const head, delete_func *free_data);
 
 /*doubly linked list*/
 
