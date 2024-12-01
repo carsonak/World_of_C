@@ -31,11 +31,12 @@ size_t queue_len(queue const *const q);
 
 typedef struct deque deque;
 
+deque *dq_new(void);
 double_link_node *push_head(deque *const dq, void const *const data);
 double_link_node *push_tail(deque *const dq, void const *const data);
 void *pop_head(deque *const dq);
 void *pop_tail(deque *const dq);
-void clear_deque(deque *const dq, delete_func *free_data);
-void print_deque(FILE *stream, deque const *const dq, print_func *print_data);
+void dq_clear(deque *const dq, delete_func *free_data);
+void dq_print(FILE *stream, deque const *const dq, print_func *print_data);
 
 #endif /* QUEUES_H */

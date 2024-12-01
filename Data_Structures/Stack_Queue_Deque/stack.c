@@ -13,6 +13,13 @@ struct stack
 };
 
 /**
+ * stk_new - allocates space for an empty stack.
+ *
+ * Return: pointer to the new stack, NULL on failure.
+ */
+stack *stk_new(void) { return (calloc(1, sizeof(stack))); }
+
+/**
  * push - push an item onto a.
  * @s: the stack to operate on.
  * @data: data that will be stored in the node.
@@ -66,7 +73,7 @@ void *pop(stack *s)
  * @s: the stack to operate on.
  * @free_data: pointer to a function that will be called to free data in nodes.
  */
-void clear_stack(stack *s, void (*free_data)(void *))
+void clear_stack(stack *s, delete_func *free_data)
 {
 	single_link_node *p = NULL;
 
@@ -88,10 +95,11 @@ void clear_stack(stack *s, void (*free_data)(void *))
 
 /**
  * print_stack - print all nodes of a stack.
+ * @stream: pointer to stream to write to.
  * @s: the stack to print.
  * @print_data: function that will be called to print data in nodes.
  */
-void print_stack(stack *s, void (*print_data)(void *))
+void print_stack(FILE *stream, stack const *const s, print_func *print_data)
 {
 	single_link_node *walk = NULL;
 
@@ -100,7 +108,7 @@ void print_stack(stack *s, void (*print_data)(void *))
 
 	if (!s->top)
 	{
-		printf("(NULL)\n");
+		fprintf(stream, "(NULL)\n");
 		return;
 	}
 
@@ -109,11 +117,11 @@ void print_stack(stack *s, void (*print_data)(void *))
 	{
 		printf("+");
 		if (print_data)
-			(*print_data)(walk->data);
+			print_data(stream, walk->data);
 		else
-			printf("%p", walk->data);
+			fprintf(stream, "%p", walk->data);
 
-		printf("\n++++++++++++\n");
+		fprintf(stream, "\n++++++++++++\n");
 		walk = walk->next;
 	}
 }

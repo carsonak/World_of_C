@@ -145,9 +145,9 @@ int main(void)
 	dll_print(stdout, head, (print_func *)print_char);
 	putchar('\n');
 
-	head = sll_clear(head, NULL);
+	head = dll_clear(head, NULL);
 	const size_t arr_len = 64;
-	long long int *arr = create_llint_array(arr_len, LLONG_MIN, 4294967296);
+	long long int *arr = create_llint_array(arr_len, -9000000000000000000, 4205000000);
 
 	head = dln_new(arr, (dup_func *)dup_llint);
 	walk = head;
@@ -156,6 +156,6 @@ int main(void)
 
 	dll_print(stdout, head, (print_func *)print_llint);
 	free(arr);
-	head = sll_clear(head, free);
+	head = dll_clear(head, free);
 	return (0);
 }

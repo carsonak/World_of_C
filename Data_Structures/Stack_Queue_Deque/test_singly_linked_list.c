@@ -147,7 +147,7 @@ int main(void)
 
 	head = sll_clear(head, NULL);
 	const size_t arr_len = 64;
-	long long int *arr = create_llint_array(arr_len, LLONG_MIN, 4294967296);
+	long long int *arr = create_llint_array(arr_len, -9000000000000000000, 4205000000);
 
 	head = sln_new(arr, (dup_func *)dup_llint);
 	walk = head;

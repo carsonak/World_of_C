@@ -15,6 +15,13 @@ struct deque
 };
 
 /**
+ * dq_new - allocate memory for an empty deque.
+ *
+ * Return: pointer to the new deque, NULL on failure.
+ */
+deque *dq_new(void) { return (calloc(1, sizeof(deque))); }
+
+/**
  * push_head - push an item to the head of the deque.
  * @dq: the deque to operate on.
  * @data: the data that the node will hold.
@@ -131,11 +138,11 @@ void *pop_tail(deque *dq)
 }
 
 /**
- * clear_deque - deletes a deque.
+ * dq_clear - deletes a deque.
  * @dq: the deque to operate on.
  * @free_data: pointer to a function that will be called to free data in nodes.
  */
-void clear_deque(deque *dq, void (*free_data)(void *))
+void dq_clear(deque *dq, void (*free_data)(void *))
 {
 	if (!dq || !dq->head)
 		return;
@@ -159,11 +166,11 @@ void clear_deque(deque *dq, void (*free_data)(void *))
 }
 
 /**
- * print_deque - print all nodes of a deque.
+ * dq_print - print all nodes of a deque.
  * @dq: the deque to print.
  * @print_data: function that will be called to print data in nodes.
  */
-void print_deque(deque *dq, void (*print_data)(void *))
+void dq_print(deque *dq, void (*print_data)(void *))
 {
 	double_link_node *walk = NULL;
 
