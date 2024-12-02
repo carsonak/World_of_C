@@ -20,28 +20,27 @@ struct stack
 stack *stk_new(void) { return (calloc(1, sizeof(stack))); }
 
 /**
- * push - push an item onto a.
+ * stk_push - push an item onto a.
  * @s: the stack to operate on.
  * @data: data that will be stored in the node.
+ * @copy_data: function that will be used to duplicate the data.
  *
  * Return: pointer to the newly added node, NULL if s is NULL or failure.
  */
-single_link_node *push(stack *s, void *data)
+single_link_node *stk_push(
+	stack *const s, void *const data, dup_func *copy_data)
 {
-	single_link_node *nw = NULL;
-
 	if (!s)
 		return (NULL);
 
-	nw = calloc(1, sizeof(*nw));
-	if (!nw)
+	single_link_node *new_top = sln_new(data, copy_data);
+
+	if (!new_top)
 		return (NULL);
 
-	nw->data = data;
-	nw->next = s->top;
-	s->top = nw;
+	s->top = sln_insert_before(s->top, new_top);
 	s->size++;
-	return (nw);
+	return (new_top);
 }
 
 /**

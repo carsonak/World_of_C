@@ -2,16 +2,16 @@
 #include "queues.h"
 
 /**
- * struct deque - a queue data structure.
- * @size: number items in the queue.
- * @head: a pointer to the head of the queue.
- * @tail: a pointer to the tail of the queue.
+ * struct deque - a deque data structure.
+ * @size: number items in the deque.
+ * @head: a pointer to the head of the deque.
+ * @tail: a pointer to the tail of the deque.
  */
 struct deque
 {
 	size_t size;
-	struct double_link_node *head;
-	struct double_link_node *tail;
+	double_link_node *head;
+	double_link_node *tail;
 };
 
 /**
@@ -22,182 +22,317 @@ struct deque
 deque *dq_new(void) { return (calloc(1, sizeof(deque))); }
 
 /**
- * push_head - push an item to the head of the deque.
- * @dq: the deque to operate on.
- * @data: the data that the node will hold.
+ * dq_len - return total items in the deque.
+ * @dq: pointer to the deque.
  *
- * Return: pointer to the newly added node, NULL if dq is NULL or failure.
+ * Return: total items in the deque.
  */
-double_link_node *push_head(deque *dq, void *data)
+size_t dq_len(deque const *const dq)
 {
-	double_link_node *nw = NULL;
-
 	if (!dq)
-		return (NULL);
+		return (0);
 
-	nw = calloc(1, sizeof(*nw));
-	if (!nw)
-		return (NULL);
-
-	nw->data = data;
-	nw->next = dq->head;
-	if (dq->head)
-		dq->head->prev = nw;
-
-	if (!dq->tail)
-		dq->tail = nw;
-
-	dq->head = nw;
-	dq->size++;
-	return (nw);
+	return (dq->size);
 }
 
 /**
- * push_tail - push an item to the tail of the deque.
+ * dq_peek_head - return data from the first node without deleting it.
  * @dq: the deque to operate on.
- * @data: the data that the node will hold.
+ *
+ * Return: pointer to data from the first node.
+ */
+void *dq_peek_head(deque const *const dq)
+{
+	if (!dq)
+		return (NULL);
+
+	return (dln_get_data(dq->head));
+}
+
+/**
+ * dq_peek_tail - return data from the last node without deleting it.
+ * @dq: the node to operate on.
+ *
+ * Return: pointer to data from the last node.
+ */
+void *dq_peek_tail(deque const *const dq)
+{
+	if (!dq)
+		return (NULL);
+
+	return (dln_get_data(dq->tail));
+}
+
+/**
+ * dq_push_tail - add a node to the end of a deque.
+ * @dq: the deque to operate on.
+ * @data: data that the node will hold.
+ * @copy_data: function that returns a separate copy of data,
+ * if NULL a simple copy of the pointer to data is done.
  *
  * Return: pointer to the newly added node, NULL if dq is NULL or failure.
  */
-double_link_node *push_tail(deque *dq, void *data)
+double_link_node *dq_push_tail(
+	deque *const dq, void *const data, dup_func *copy_data)
 {
 	double_link_node *nw = NULL;
 
 	if (!dq)
 		return (NULL);
 
-	nw = calloc(1, sizeof(*nw));
+	nw = dln_new(data, copy_data);
 	if (!nw)
 		return (NULL);
 
-	nw->data = data;
-	nw->prev = dq->tail;
-	if (dq->tail)
-		dq->tail->next = nw;
-
+	dq->tail = dln_insert_after(dq->tail, nw);
 	if (!dq->head)
 		dq->head = nw;
 
-	dq->tail = nw;
-	dq->size++;
+	++(dq->size);
 	return (nw);
 }
 
 /**
- * pop_head - pops node at the head of the deque and returns its data.
+ * dq_pop_tail - pop a node from the tail of a deque.
  * @dq: the deque to operate on.
  *
- * Return: data that was in the popped node.
+ * Return: pointer to the data that was in the node.
  */
-void *pop_head(deque *dq)
+void *dq_pop_tail(deque *dq)
 {
-	double_link_node *p = NULL;
-	void *d = NULL;
-
-	if (!dq || !dq->head)
-		return (NULL);
-
-	p = dq->head;
-	d = dq->head->data;
-	dq->head = dq->head->next;
-	free(p);
-	if (!dq->head)
-		dq->tail = NULL;
-
-	if (dq->size)
-		dq->size--;
-
-	return (d);
-}
-
-/**
- * pop_tail - pops node at the tail of the deque and returns its data.
- * @dq: the deque to operate on.
- *
- * Return: data that was in the popped node.
- */
-void *pop_tail(deque *dq)
-{
-	double_link_node *p = NULL;
-	void *d = NULL;
-
 	if (!dq || !dq->tail)
 		return (NULL);
 
-	p = dq->tail;
-	d = dq->tail->data;
-	dq->tail = dq->tail->prev;
-	free(p);
+	double_link_node *node = dq->tail;
+
+	dq->tail = dln_get_previous(node);
+	void *d = dln_remove(node);
+
 	if (!dq->tail)
 		dq->head = NULL;
 
 	if (dq->size)
-		dq->size--;
+		--(dq->size);
 
 	return (d);
 }
 
 /**
- * dq_clear - deletes a deque.
+ * dq_push_head - add a new node to the head of the deque.
+ * @dq: the deque to operate on.
+ * @data: data that the new node will hold.
+ * @copy_data: function that will be called to duplicate `data`.
+ *
+ * Return: pointer to the new node, NULL on failure.
+ */
+double_link_node *dq_push_head(
+	deque *const dq, void *const data, dup_func *copy_data)
+{
+	if (!dq)
+		return (NULL);
+
+	double_link_node *nw = dln_new(data, copy_data);
+
+	if (!nw)
+		return (NULL);
+
+	dq->head = dln_insert_before(dq->head, nw);
+	if (!dq->tail)
+		dq->tail = nw;
+
+	++(dq->size);
+	return (nw);
+}
+
+/**
+ * dq_pop_head - pop a node from the head of a deque and return its data.
+ * @dq: the deque to operate on.
+ *
+ * Return: pointer to the data in the popped node, NULL if dq or head is NULL.
+ */
+void *dq_pop_head(deque *const dq)
+{
+	if (!dq || !dq->head)
+		return (NULL);
+
+	double_link_node *node = dq->head;
+
+	dq->head = dln_get_next(node);
+	void *d = dln_remove(node);
+
+	if (!dq->head)
+		dq->tail = NULL;
+
+	if (dq->size)
+		--(dq->size);
+
+	return (d);
+}
+
+/**
+ * clear_deque - delete a deque.
  * @dq: the deque to operate on.
  * @free_data: pointer to a function that will be called to free data in nodes.
  */
-void dq_clear(deque *dq, void (*free_data)(void *))
+static void clear_deque(deque *const dq, delete_func *free_data)
 {
+	double_link_node *next_node = NULL;
+
 	if (!dq || !dq->head)
 		return;
 
-	while (dq->head->next)
+	next_node = dln_get_next(dq->head);
+	while (next_node)
 	{
 		if (free_data)
-			(*free_data)(dq->head->data);
+			free_data(dln_remove(dq->head));
 
-		dq->head = dq->head->next;
-		free(dq->head->prev);
+		dq->head = next_node;
+		next_node = dln_get_next(dq->head);
 	}
 
 	if (free_data)
-		(*free_data)(dq->head->data);
+		free_data(dln_remove(dq->head));
 
-	free(dq->head);
 	dq->head = NULL;
 	dq->tail = NULL;
 	dq->size = 0;
 }
 
 /**
+ * dq_delete - frees a deque from memory.
+ * @nullable_ptr: pointer to the deque to delete.
+ * @free_data: pointer to a function that can free data in the deque.
+ *
+ * Return: NULL always.
+ */
+void *dq_delete(deque *const nullable_ptr, delete_func *free_data)
+{
+	clear_deque(nullable_ptr, free_data);
+	free(nullable_ptr);
+	return (NULL);
+}
+
+/**
+ * dq_from_array - create a new deque from an array of objects.
+ * @data_array: the array of objects.
+ * @len: number of items in the array.
+ * @type_size: size of the type in the array.
+ * @copy_data: function that will be used to copy the objects.
+ * @delete_data: function that will be used to delete objects.
+ *
+ * Return: pointer to the new deque, NULL on failure.
+ */
+deque *dq_from_array(
+	void *const data_array, const size_t len, const size_t type_size,
+	dup_func *copy_data, delete_func *delete_data)
+{
+	deque *new_q = NULL;
+
+	if (!data_array || len == 0)
+		return (NULL);
+
+	/*Avoid memory leaks by rejecting imbalanced allocation deallocation.*/
+	if (copy_data && !delete_data)
+		return (NULL);
+
+	new_q = dq_new();
+	if (!new_q)
+		return (NULL);
+
+	for (size_t i = 0; i < len; i++)
+	{
+		void *data = (char *)data_array + (type_size * i);
+
+		if (!dq_push_tail(new_q, data, copy_data))
+		{
+			new_q = dq_delete(new_q, delete_data);
+			break;
+		}
+	}
+
+	return (new_q);
+}
+
+/**
  * dq_print - print all nodes of a deque.
+ * @stream: pointer to the stream to output to.
  * @dq: the deque to print.
  * @print_data: function that will be called to print data in nodes.
  */
-void dq_print(deque *dq, void (*print_data)(void *))
+void dq_print(FILE *stream, deque const *const dq, print_func *print_data)
 {
-	double_link_node *walk = NULL;
+	double_link_node const *walk = NULL;
 
 	if (!dq)
 		return;
 
 	if (!dq->head)
-		printf("(NULL)\n");
-
-	if (print_data)
-		(*print_data)(dq->head->data);
-	else
-		printf("%p", dq->head);
-
-	walk = dq->head->next;
-	while (walk)
 	{
-		if (print_data)
-		{
-			printf(" <=> ");
-			(*print_data)(walk->data);
-		}
-		else
-			printf(" <=> %p", walk->data);
-
-		walk = walk->next;
+		fprintf(stream, "(NULL)\n");
+		return;
 	}
 
-	printf("\n");
+	/*WARNING: need to check return values of the printing functions.*/
+	walk = dq->head;
+	if (print_data)
+		print_data(stream, dln_get_data(walk));
+	else
+		fprintf(stream, "%p", dln_get_data(walk));
+
+	walk = dln_get_next(walk);
+	while (walk)
+	{
+		fprintf(stream, " <--> ");
+		if (print_data)
+			print_data(stream, dln_get_data(walk));
+		else
+			fprintf(stream, "%p", dln_get_data(walk));
+
+		walk = dln_get_next(walk);
+	}
+
+	fprintf(stream, "\n");
+}
+
+/**
+ * dq_print_reversed - print all nodes of a deque from tail to head.
+ * @stream: pointer to the stream to output to.
+ * @dq: the deque to print.
+ * @print_data: function that will be called to print data in nodes.
+ */
+void dq_print_reversed(
+	FILE *stream, deque const *const dq, print_func *print_data)
+{
+	double_link_node const *walk = NULL;
+
+	if (!dq)
+		return;
+
+	if (!dq->tail)
+	{
+		fprintf(stream, "(NULL)\n");
+		return;
+	}
+
+	/*WARNING: need to check return values of the printing functions.*/
+	walk = dq->tail;
+	if (print_data)
+		print_data(stream, dln_get_data(walk));
+	else
+		fprintf(stream, "%p", dln_get_data(walk));
+
+	walk = dln_get_previous(walk);
+	while (walk)
+	{
+		fprintf(stream, " <--> ");
+		if (print_data)
+			print_data(stream, dln_get_data(walk));
+		else
+			fprintf(stream, "%p", dln_get_data(walk));
+
+		walk = dln_get_previous(walk);
+	}
+
+	fprintf(stream, "\n");
 }

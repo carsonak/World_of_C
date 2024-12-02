@@ -45,26 +45,51 @@ double_link_node *dln_new(void *const data, dup_func *duplicate_data)
 /**
  * dln_insert_after - inserts a double link node after another.
  * @this_node: the node to insert after.
- * @node: the node to insert.
+ * @other_node: the node to insert.
  *
  * Return: pointer to the newly inserted node.
  */
 double_link_node *dln_insert_after(
-	double_link_node *const this_node, double_link_node *const node)
+	double_link_node *const this_node, double_link_node *const other_node)
 {
 	if (!this_node)
-		return (node);
+		return (other_node);
 
-	if (!node)
+	if (!other_node)
 		return (this_node);
 
-	node->prev = this_node;
-	node->next = this_node->next;
+	other_node->prev = this_node;
+	other_node->next = this_node->next;
 	if (this_node->next)
-		this_node->next->prev = node;
+		this_node->next->prev = other_node;
 
-	this_node->next = node;
-	return (node);
+	this_node->next = other_node;
+	return (other_node);
+}
+
+/**
+ * dln_insert_before - insert a double link node before another.
+ * @this_node: the node to insert before.
+ * @other_node: the node to insert.
+ *
+ * Return: pointer to the newly inserted node.
+ */
+double_link_node *dln_insert_before(
+	double_link_node *const this_node, double_link_node *other_node)
+{
+	if (!this_node)
+		return (other_node);
+
+	if (!other_node)
+		return (this_node);
+
+	other_node->next = this_node;
+	other_node->prev = this_node->prev;
+	if (this_node->prev)
+		this_node->prev->next = other_node;
+
+	this_node->prev = other_node;
+	return (other_node);
 }
 
 /**
@@ -157,7 +182,7 @@ void dll_print(FILE *stream, double_link_node const *const head, print_func *pri
 	walk = dln_get_next(walk);
 	while (walk)
 	{
-		printf(" --> ");
+		printf(" <--> ");
 		if (print_data)
 			print_data(stream, dln_get_data(walk));
 		else

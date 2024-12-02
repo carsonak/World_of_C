@@ -25,7 +25,9 @@ typedef struct single_link_node single_link_node;
 
 single_link_node *sln_new(void *const data, dup_func *duplicate_data);
 single_link_node *sln_insert_after(
-	single_link_node *const node, single_link_node *const this_node);
+	single_link_node *const this_node, single_link_node *const ohter_node);
+single_link_node *sln_insert_before(
+	single_link_node *const this_node, single_link_node *other_node);
 void *sln_remove(single_link_node *const node);
 void *sln_get_data(single_link_node const *const node);
 single_link_node *sln_get_next(single_link_node const *const node);
@@ -38,7 +40,9 @@ typedef struct double_link_node double_link_node;
 
 double_link_node *dln_new(void *const data, dup_func *duplicate_data);
 double_link_node *dln_insert_after(
-	double_link_node *const this_node, double_link_node *const node);
+	double_link_node *const this_node, double_link_node *const other_node);
+double_link_node *dln_insert_before(
+	double_link_node *const this_node, double_link_node *other_node);
 void *dln_remove(double_link_node *node);
 void *dln_get_data(double_link_node const *const node);
 double_link_node *dln_get_next(double_link_node const *const node);

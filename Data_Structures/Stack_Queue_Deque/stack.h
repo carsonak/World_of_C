@@ -13,7 +13,8 @@ typedef struct single_link_node single_link_node;
 typedef struct stack stack;
 
 stack *stk_new(void);
-single_link_node *push(stack *const s, void *const data);
+single_link_node *stk_push(
+	stack *const s, void *const data, dup_func *copy_data);
 void *pop(stack *const s);
 void clear_stack(stack *const s, delete_func *free_data);
 void print_stack(stack *const s, print_func *print_data);

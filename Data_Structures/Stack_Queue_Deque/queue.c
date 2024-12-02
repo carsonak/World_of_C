@@ -10,8 +10,8 @@
 struct queue
 {
 	size_t size;
-	double_link_node *head;
-	double_link_node *tail;
+	single_link_node *head;
+	single_link_node *tail;
 };
 
 /**
@@ -36,27 +36,27 @@ size_t queue_len(queue const *const q)
 }
 
 /**
- * enqueue - add an item to the end of a queue.
+ * enqueue - add a node to the end of a queue.
  * @q: the queue to operate on.
- * @data: data that the node will store.
- * @duplicate_data: function that returns a separate copy of data,
+ * @data: data that the node will hold.
+ * @copy_data: function that returns a separate copy of data,
  * if NULL a simple copy of the pointer to data is done.
  *
  * Return: pointer to the newly added node, NULL if q is NULL or failure.
  */
-double_link_node *enqueue(
-	queue *const q, void *const data, dup_func *duplicate_data)
+single_link_node *enqueue(
+	queue *const q, void *const data, dup_func *copy_data)
 {
-	double_link_node *nw = NULL;
+	single_link_node *nw = NULL;
 
 	if (!q)
 		return (NULL);
 
-	nw = dln_new(data, duplicate_data);
+	nw = sln_new(data, copy_data);
 	if (!nw)
 		return (NULL);
 
-	q->tail = dln_insert_after(q->tail, nw);
+	q->tail = sln_insert_after(q->tail, nw);
 	if (!q->head)
 		q->head = nw;
 
@@ -65,22 +65,22 @@ double_link_node *enqueue(
 }
 
 /**
- * dequeue - pop an item from the start of a queue and return its data.
+ * dequeue - pop a node from the start of a queue and return its data.
  * @q: the queue to operate on.
  *
  * Return: pointer to the data in the popped node, NULL if q or head is NULL.
  */
 void *dequeue(queue *const q)
 {
-	double_link_node *node = NULL;
+	single_link_node *node = NULL;
 	void *d = NULL;
 
 	if (!q || !q->head)
 		return (NULL);
 
 	node = q->head;
-	q->head = dln_get_next(node);
-	d = dln_remove(node);
+	q->head = sln_get_next(node);
+	d = sln_remove(node);
 	if (!q->head)
 		q->tail = NULL;
 
@@ -90,7 +90,33 @@ void *dequeue(queue *const q)
 	return (d);
 }
 
-void *queue_peek(queue const *const q) { return (dln_get_data(q->head)); }
+/**
+ * queue_peek_first - return data from the first node without deleting it.
+ * @q: the queue to operate on.
+ *
+ * Return: pointer to data from the first node.
+ */
+void *queue_peek_first(queue const *const q)
+{
+	if (!q)
+		return (NULL);
+
+	return (sln_get_data(q->head));
+}
+
+/**
+ * queue_peek_last - return data from the last node without deleting it.
+ * @q: the node to operate on.
+ *
+ * Return: pointer to data from the last node.
+ */
+void *queue_peek_last(queue const *const q)
+{
+	if (!q)
+		return (NULL);
+
+	return (sln_get_data(q->tail));
+}
 
 /**
  * clear_queue - delete a queue.
@@ -99,23 +125,23 @@ void *queue_peek(queue const *const q) { return (dln_get_data(q->head)); }
  */
 static void clear_queue(queue *const q, delete_func *free_data)
 {
-	double_link_node *next_node = NULL;
+	single_link_node *next_node = NULL;
 
 	if (!q || !q->head)
 		return;
 
-	next_node = dln_get_next(q->head);
+	next_node = sln_get_next(q->head);
 	while (next_node)
 	{
 		if (free_data)
-			free_data(dln_remove(q->head));
+			free_data(sln_remove(q->head));
 
 		q->head = next_node;
-		next_node = dln_get_next(q->head);
+		next_node = sln_get_next(q->head);
 	}
 
 	if (free_data)
-		free_data(dln_remove(q->head));
+		free_data(sln_remove(q->head));
 
 	q->head = NULL;
 	q->tail = NULL;
@@ -141,21 +167,22 @@ void *queue_delete(queue *const nullable_ptr, delete_func *free_data)
  * @data_array: the array of objects.
  * @len: number of items in the array.
  * @type_size: size of the type in the array.
- * @duplicate_data: function that will be used to copy the objects.
- * @delete_data: function that will be used to delete objects on failure.
+ * @copy_data: function that will be used to copy the objects.
+ * @delete_data: function that will be used to delete objects.
  *
  * Return: pointer to the new queue, NULL on failure.
  */
 queue *queue_from_array(
 	void *const data_array, const size_t len, const size_t type_size,
-	dup_func *duplicate_data, delete_func *delete_data)
+	dup_func *copy_data, delete_func *delete_data)
 {
 	queue *new_q = NULL;
 
 	if (!data_array || len == 0)
 		return (NULL);
 
-	if (duplicate_data && !delete_data)
+	/*Avoid memory leaks by rejecting imbalanced allocation deallocation.*/
+	if (copy_data && !delete_data)
 		return (NULL);
 
 	new_q = queue_new();
@@ -166,7 +193,7 @@ queue *queue_from_array(
 	{
 		void *data = (char *)data_array + (type_size * i);
 
-		if (!enqueue(new_q, data, duplicate_data))
+		if (!enqueue(new_q, data, copy_data))
 		{
 			new_q = queue_delete(new_q, delete_data);
 			break;
@@ -184,7 +211,7 @@ queue *queue_from_array(
  */
 void queue_print(FILE *stream, queue const *const q, print_func *print_data)
 {
-	double_link_node const *walk = NULL;
+	single_link_node const *walk = NULL;
 
 	if (!q)
 		return;
@@ -198,20 +225,20 @@ void queue_print(FILE *stream, queue const *const q, print_func *print_data)
 	/*WARNING: need to check return values of the printing functions.*/
 	walk = q->head;
 	if (print_data)
-		print_data(stream, dln_get_data(walk));
+		print_data(stream, sln_get_data(walk));
 	else
-		fprintf(stream, "%p", dln_get_data(walk));
+		fprintf(stream, "%p", sln_get_data(walk));
 
-	walk = dln_get_next(walk);
+	walk = sln_get_next(walk);
 	while (walk)
 	{
 		fprintf(stream, " --> ");
 		if (print_data)
-			print_data(stream, dln_get_data(walk));
+			print_data(stream, sln_get_data(walk));
 		else
-			fprintf(stream, "%p", dln_get_data(walk));
+			fprintf(stream, "%p", sln_get_data(walk));
 
-		walk = dln_get_next(walk);
+		walk = sln_get_next(walk);
 	}
 
 	fprintf(stream, "\n");
