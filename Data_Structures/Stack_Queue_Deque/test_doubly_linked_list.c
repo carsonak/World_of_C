@@ -145,7 +145,7 @@ int main(void)
 	dll_print(stdout, head, (print_func *)print_char);
 	putchar('\n');
 
-	head = dll_clear(head, NULL);
+	head = dll_delete(head, NULL);
 	const size_t arr_len = 64;
 	long long int *arr = create_llint_array(arr_len, -9000000000000000000, 4205000000);
 
@@ -156,6 +156,6 @@ int main(void)
 
 	dll_print(stdout, head, (print_func *)print_llint);
 	free(arr);
-	head = dll_clear(head, free);
+	head = dll_delete(head, free);
 	return (0);
 }

@@ -19,6 +19,25 @@ static int print_char(FILE *stream, char const *const c)
 }
 
 /**
+ * dup_char - makes a copy of a char pointer.
+ * @c: pointer to the char.
+ *
+ * Return: pointer to the new char, NULL on failure.
+ */
+static char *dup_char(char const *const c)
+{
+	if (!c)
+		return (NULL);
+
+	char *ptr = malloc(sizeof(*ptr));
+
+	if (ptr)
+		*ptr = *c;
+
+	return (ptr);
+}
+
+/**
  * print_llint - prints an int.
  * @d: pointer to the int.
  *
@@ -36,13 +55,16 @@ static int print_llint(FILE *stream, long long int const *const d)
  * dup_llint - make a copy of an int pointer.
  * @n: pointer to the int.
  *
- * Return: pointer to a new int.
+ * Return: pointer to a new int, NULL on failure.
  */
 static long long int *dup_llint(long long int const *const n)
 {
-	long long int *const ptr = calloc(1, sizeof(*ptr));
+	if (!n)
+		return (NULL);
 
-	if (n && ptr)
+	long long int *const ptr = malloc(sizeof(*ptr));
+
+	if (ptr)
 		*ptr = *n;
 
 	return (ptr);
@@ -131,7 +153,7 @@ static single_link_node *filter_vowels_and_digits(single_link_node *head)
 int main(void)
 {
 	single_link_node *head = NULL, *walk = NULL;
-	char s[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\" #$ % &'()*+,-./:;<=>?@[\\]^_`{|}~";
+	char s[] = "0123456789-abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ!";
 
 	head = sln_new(s, NULL);
 	walk = head;

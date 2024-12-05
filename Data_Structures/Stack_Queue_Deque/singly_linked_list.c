@@ -10,16 +10,17 @@ struct single_link_node
 {
 	void *data;
 	struct single_link_node *next;
+	/*This second pointer is to make insertion and deletion easier.*/
 	struct single_link_node *prev;
 };
 
 /**
- * sln_new - allocates memory for a single link node and initialises it.
- * @data: the object to initialise with.
+ * sln_new - allocates and initialises memory for a `single_link_node`.
+ * @data: pointer to the object to initialise with.
  * @duplicate_data: function that returns a separate copy of data,
- * if NULL a simple copy of the pointer to data is done.
+ * if NULL the pointer to the original data is stored.
  *
- * Return: pointer to the node, NULL on failure.
+ * Return: pointer to the new node, NULL on failure.
  */
 single_link_node *sln_new(void *const data, dup_func *duplicate_data)
 {
@@ -32,7 +33,7 @@ single_link_node *sln_new(void *const data, dup_func *duplicate_data)
 	if (duplicate_data)
 	{
 		new_node->data = duplicate_data(data);
-		if (!new_node->data)
+		if (!new_node->data && data)
 		{
 			free(new_node);
 			return (NULL);
@@ -43,7 +44,7 @@ single_link_node *sln_new(void *const data, dup_func *duplicate_data)
 }
 
 /**
- * sln_insert_after - inserts a single link node after another.
+ * sln_insert_after - inserts a `single_link_node` after another.
  * @this_node: the node to insert after.
  * @other_node: the node to insert.
  *

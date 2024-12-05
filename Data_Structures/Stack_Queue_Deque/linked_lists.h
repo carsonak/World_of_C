@@ -48,6 +48,6 @@ void *dln_get_data(double_link_node const *const node);
 double_link_node *dln_get_next(double_link_node const *const node);
 double_link_node *dln_get_previous(double_link_node const *const node);
 void dll_print(FILE *stream, double_link_node const *const head, print_func *print_data);
-void *dll_clear(double_link_node *const head, delete_func *free_data);
+void *dll_delete(double_link_node *const head, delete_func *free_data);
 
 #endif /* LINKED_NODES_H */

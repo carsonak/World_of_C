@@ -3,12 +3,12 @@
 
 /**
  * struct stack - a stack data structure.
- * @size: the number of nodes in the stack.
+ * @len: the number of nodes in the stack.
  * @top: pointer to the top of the stack.
  */
 struct stack
 {
-	size_t size;
+	size_t len;
 	single_link_node *top;
 };
 
@@ -18,6 +18,34 @@ struct stack
  * Return: pointer to the new stack, NULL on failure.
  */
 stack *stk_new(void) { return (calloc(1, sizeof(stack))); }
+
+/**
+ * stk_len - return number of nodes in the stack.
+ * @s: the stack to operate on.
+ *
+ * Return: number of nodes in the stack.
+ */
+size_t stk_len(stack const *const s)
+{
+	if (!s)
+		return (0);
+
+	return (s->len);
+}
+
+/**
+ * stk_peek - return data at the top of the stack without deleting the node.
+ * @s: the stack to operate on.
+ *
+ * Return: pointer to data at the top of the stack.
+ */
+void *stk_peek(stack const *const s)
+{
+	if (!s)
+		return (NULL);
+
+	return (sln_get_data(s->top));
+}
 
 /**
  * stk_push - push an item onto a.
@@ -39,31 +67,29 @@ single_link_node *stk_push(
 		return (NULL);
 
 	s->top = sln_insert_before(s->top, new_top);
-	s->size++;
+	++(s->len);
 	return (new_top);
 }
 
 /**
- * pop - pop the top node on the stack and returns the data.
+ * stk_pop - pop the top node on the stack and returns the data.
  * @s: the stack to operate on.
  *
  * Return: pointer to the data that was in the top node, NULL if s is NULL.
  */
-void *pop(stack *s)
+void *stk_pop(stack *const s)
 {
-	single_link_node *n = NULL;
-	void *data = NULL;
-
 	if (!s || !s->top)
 		return (NULL);
 
-	data = s->top->data;
-	n = s->top;
-	s->top = s->top->next;
-	if (s->size)
-		s--;
+	single_link_node *old_top = s->top;
 
-	free(n);
+	s->top = sln_get_next(old_top);
+	void *data = sln_remove(old_top);
+
+	if (s->len)
+		--(s->len);
+
 	return (data);
 }
 
@@ -72,33 +98,54 @@ void *pop(stack *s)
  * @s: the stack to operate on.
  * @free_data: pointer to a function that will be called to free data in nodes.
  */
-void clear_stack(stack *s, delete_func *free_data)
+static void clear_stack(stack *const s, delete_func *free_data)
 {
-	single_link_node *p = NULL;
+	single_link_node *next_node = NULL;
+	void *d = NULL;
 
-	if (!s)
+	if (!s || !s->top)
 		return;
 
-	while (s->top)
+	next_node = sln_get_next(s->top);
+	while (next_node)
 	{
-		p = s->top;
-		s->top = s->top->next;
+		d = sln_remove(s->top);
 		if (free_data)
-			free_data(p->data);
+			free_data(d);
 
-		free(p);
+		s->top = next_node;
+		next_node = sln_get_next(s->top);
 	}
 
-	s->size = 0;
+	d = sln_remove(s->top);
+	if (free_data)
+		free_data(d);
+
+	s->top = NULL;
+	s->len = 0;
 }
 
 /**
- * print_stack - print all nodes of a stack.
+ * stk_delete - delete a stack.
+ * @nullable_ptr: pointer to the stack to delete.
+ * @free_data: pointer to a function that can free data in the queue.
+ *
+ * Return: NULL always.
+ */
+void *stk_delete(stack *const nullable_ptr, delete_func *free_data)
+{
+	clear_stack(nullable_ptr, free_data);
+	free(nullable_ptr);
+	return (NULL);
+}
+
+/**
+ * stk_print - print all nodes of a stack.
  * @stream: pointer to stream to write to.
  * @s: the stack to print.
  * @print_data: function that will be called to print data in nodes.
  */
-void print_stack(FILE *stream, stack const *const s, print_func *print_data)
+void stk_print(FILE *stream, stack const *const s, print_func *print_data)
 {
 	single_link_node *walk = NULL;
 
@@ -114,13 +161,15 @@ void print_stack(FILE *stream, stack const *const s, print_func *print_data)
 	walk = s->top;
 	while (walk)
 	{
-		printf("+");
+		fprintf(stream, "+ ");
+		void *d = sln_get_data(walk);
+
 		if (print_data)
-			print_data(stream, walk->data);
+			print_data(stream, d);
 		else
-			fprintf(stream, "%p", walk->data);
+			fprintf(stream, "%p", d);
 
 		fprintf(stream, "\n++++++++++++\n");
-		walk = walk->next;
+		walk = sln_get_next(walk);
 	}
 }

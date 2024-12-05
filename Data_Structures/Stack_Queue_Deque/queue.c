@@ -126,6 +126,7 @@ void *queue_peek_last(queue const *const q)
 static void clear_queue(queue *const q, delete_func *free_data)
 {
 	single_link_node *next_node = NULL;
+	void *d = NULL;
 
 	if (!q || !q->head)
 		return;
@@ -133,15 +134,17 @@ static void clear_queue(queue *const q, delete_func *free_data)
 	next_node = sln_get_next(q->head);
 	while (next_node)
 	{
+		d = sln_remove(q->head);
 		if (free_data)
-			free_data(sln_remove(q->head));
+			free_data(d);
 
 		q->head = next_node;
 		next_node = sln_get_next(q->head);
 	}
 
+	d = sln_remove(q->head);
 	if (free_data)
-		free_data(sln_remove(q->head));
+		free_data(d);
 
 	q->head = NULL;
 	q->tail = NULL;
@@ -233,10 +236,12 @@ void queue_print(FILE *stream, queue const *const q, print_func *print_data)
 	while (walk)
 	{
 		fprintf(stream, " --> ");
+		void *d = sln_get_data(walk);
+
 		if (print_data)
-			print_data(stream, sln_get_data(walk));
+			print_data(stream, d);
 		else
-			fprintf(stream, "%p", sln_get_data(walk));
+			fprintf(stream, "%p", d);
 
 		walk = sln_get_next(walk);
 	}

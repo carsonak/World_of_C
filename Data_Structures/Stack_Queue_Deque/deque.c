@@ -177,6 +177,7 @@ void *dq_pop_head(deque *const dq)
 static void clear_deque(deque *const dq, delete_func *free_data)
 {
 	double_link_node *next_node = NULL;
+	void *d = NULL;
 
 	if (!dq || !dq->head)
 		return;
@@ -184,15 +185,17 @@ static void clear_deque(deque *const dq, delete_func *free_data)
 	next_node = dln_get_next(dq->head);
 	while (next_node)
 	{
+		d = dln_remove(dq->head);
 		if (free_data)
-			free_data(dln_remove(dq->head));
+			free_data(d);
 
 		dq->head = next_node;
 		next_node = dln_get_next(dq->head);
 	}
 
+	d = dln_remove(dq->head);
 	if (free_data)
-		free_data(dln_remove(dq->head));
+		free_data(d);
 
 	dq->head = NULL;
 	dq->tail = NULL;
@@ -284,10 +287,12 @@ void dq_print(FILE *stream, deque const *const dq, print_func *print_data)
 	while (walk)
 	{
 		fprintf(stream, " <--> ");
+		void *d = dln_get_data(walk);
+
 		if (print_data)
-			print_data(stream, dln_get_data(walk));
+			print_data(stream, d);
 		else
-			fprintf(stream, "%p", dln_get_data(walk));
+			fprintf(stream, "%p", d);
 
 		walk = dln_get_next(walk);
 	}
@@ -326,10 +331,12 @@ void dq_print_reversed(
 	while (walk)
 	{
 		fprintf(stream, " <--> ");
+		void *d = dln_get_data(walk);
+
 		if (print_data)
-			print_data(stream, dln_get_data(walk));
+			print_data(stream, d);
 		else
-			fprintf(stream, "%p", dln_get_data(walk));
+			fprintf(stream, "%p", d);
 
 		walk = dln_get_previous(walk);
 	}
