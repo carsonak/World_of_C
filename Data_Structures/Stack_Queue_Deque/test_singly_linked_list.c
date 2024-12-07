@@ -3,11 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-/*https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html*/
-#define PPPSTRINGIFY(XXX) #XXX
-#define STRINGIFY(XXX) PPPSTRINGIFY(XXX)
-
-#define MAX_STRING_SIZE 256
+static const unsigned int MAX_STRING_SIZE = 256;
 
 static const char original[] = "original";
 static const char n1d[] = "one", n2d[] = "two", n3d[] = "three";
@@ -35,7 +31,7 @@ static char *dup_str(char const *const s)
 	if (!s)
 		return (NULL);
 
-	size_t len = 0;
+	unsigned int len = 0;
 
 	while (s[len] && len <= MAX_STRING_SIZE)
 		++len;
@@ -50,60 +46,6 @@ static char *dup_str(char const *const s)
 
 	return (s_dup);
 }
-
-/**
- * print_char - prints a char.
- * @stream: stream to print out to.
- * @c: pointer to the char.
- *
- * Return: same as printf.
- */
-// static int print_char(FILE *stream, char const *const c)
-// {
-// 	if (!c)
-// 		return (fprintf(stream, "NULL"));
-
-// 	return (fprintf(stream, "%c", *c));
-// }
-
-/**
- * print_llint - prints an int.
- * @d: pointer to the int.
- *
- * Return: same as printf.
- */
-// static int print_llint(FILE *stream, long long int const *const d)
-// {
-// 	if (!d)
-// 		return (fprintf(stream, "NULL"));
-
-// 	return (fprintf(stream, "%lld", *d));
-// }
-
-/**
- * create_llint_array - create an int array and initialise with a range of values.
- * @len: length of the array to create.
- * @start: starting value.
- * @step: size between each value.
- *
- * Return: pointer to the array, NULL on failure.
- */
-// static long long int *create_llint_array(const size_t len, const long long int start, const long long int step)
-// {
-// 	long long int c = start;
-// 	long long int *new_arr = malloc(len * sizeof(*new_arr));
-
-// 	if (!new_arr)
-// 		return (NULL);
-
-// 	for (size_t i = 0; i < len; i++)
-// 	{
-// 		new_arr[i] = c;
-// 		c += step;
-// 	}
-
-// 	return (new_arr);
-// }
 
 TAU_MAIN()
 
