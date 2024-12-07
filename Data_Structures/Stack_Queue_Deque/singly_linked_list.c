@@ -101,12 +101,11 @@ single_link_node *sln_insert_before(
  */
 void *sln_remove(single_link_node *const node)
 {
-	void *d = NULL;
-
 	if (!node)
 		return (NULL);
 
-	d = node->data;
+	void *d = node->data;
+
 	node->data = NULL;
 	if (node->next)
 		node->next->prev = node->prev;
@@ -135,12 +134,42 @@ void *sln_get_data(single_link_node const *const node)
 }
 
 /**
+ * sln_swap_data - replace data in a node.
+ * @node: pointer to the node to modify.
+ * @data: pointer to the data to swap in.
+ * @copy_data: function that will be called to duplicate data, if NULL
+ * only pointer to `data` is stored.
+ *
+ * Return: pointer to the old data in node, NULL on failure.
+ */
+void *sln_swap_data(single_link_node *const node, void *const data, dup_func *copy_data)
+{
+	if (!node)
+		return (NULL);
+
+	void *old_data = sln_get_data(node);
+
+	node->data = data;
+	if (copy_data)
+	{
+		node->data = copy_data(data);
+		if (!node->data && data)
+		{
+			node->data = old_data;
+			return (NULL);
+		}
+	}
+
+	return (old_data);
+}
+
+/**
  * sln_get_next - return a node's successor.
  * @node: the node to query.
  *
  * Return: pointer to the next node.
  */
-single_link_node *sln_get_next(const single_link_node *node)
+single_link_node *sln_get_next(single_link_node const *const node)
 {
 	if (!node)
 		return (NULL);
