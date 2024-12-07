@@ -1,7 +1,7 @@
 BINDIR := bin
-CC := gcc
+CC := clang
 STANDARD := --std=c17
-WFLAGS := -Wall -Wextra -Wformat=2 -pedantic -Werror
+WFLAGS := -Wall -Wextra -Wformat -Wformat=2 -pedantic -Werror
 OPTIMISATION := -Og
 DEBUG := -g3 -fno-omit-frame-pointer
 SANITIZER := -fsanitize=address -fsanitize=undefined -fno-common -D_FORTIFY_SOURCE=0

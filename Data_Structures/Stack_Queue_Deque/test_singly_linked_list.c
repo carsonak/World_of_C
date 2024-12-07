@@ -9,7 +9,7 @@ static const char original[] = "original";
 static const char n1d[] = "one", n2d[] = "two", n3d[] = "three";
 
 /**
- * fail_dup -failing duplicate function.
+ * fail_dup - failing duplicating function.
  * @d: unused.
  *
  * Return: NULL.
@@ -36,7 +36,7 @@ static char *dup_str(char const *const s)
 	while (s[len] && len <= MAX_STRING_SIZE)
 		++len;
 
-	char *s_dup = malloc(sizeof(*s_dup) * (len + 1));
+	char *const s_dup = malloc(sizeof(*s_dup) * (len + 1));
 
 	if (s_dup)
 	{
@@ -423,4 +423,19 @@ TEST_F(node_deletion, remove_second_node_of_2_in_list)
 	CHECK(sln_remove(tau->n2) == n2d, "data returned should be n2's");
 	tau->n2 = NULL;
 	CHECK(sln_get_next(tau->n1) == NULL, "n1 next should be NULL");
+}
+
+TEST(node_deletion, clear_NULL)
+{
+	/*Should produce no leaks or UB.*/
+	sll_clear(NULL, NULL);
+}
+
+TEST_F(node_deletion, clear_sll)
+{
+	/*Should produce no leaks or UB.*/
+	sll_clear(tau->n1, NULL);
+	tau->n1 = NULL;
+	tau->n2 = NULL;
+	tau->n3 = NULL;
 }
