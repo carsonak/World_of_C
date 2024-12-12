@@ -54,9 +54,10 @@ double_link_node *dln_insert_before(
 	double_link_node *const this_node, double_link_node *other_node);
 void *dln_remove(double_link_node *node);
 void *dln_get_data(double_link_node const *const node);
+void *dln_swap_data(double_link_node *const node, void *const data, dup_func *copy_data);
 double_link_node *dln_get_next(double_link_node const *const node);
-double_link_node *dln_get_previous(double_link_node const *const node);
+double_link_node *dln_get_prev(double_link_node const *const node);
 void dll_print(FILE *stream, double_link_node const *const head, print_func *print_data);
-void *dll_delete(double_link_node *const head, delete_func *free_data);
+void *dll_clear(double_link_node *const head, delete_func *free_data);
 
 #endif /* LINKED_NODES_H */

@@ -105,7 +105,7 @@ void *dq_pop_tail(deque *dq)
 
 	double_link_node *node = dq->tail;
 
-	dq->tail = dln_get_previous(node);
+	dq->tail = dln_get_prev(node);
 	void *d = dln_remove(node);
 
 	if (!dq->tail)
@@ -327,7 +327,7 @@ void dq_print_reversed(
 	else
 		fprintf(stream, "%p", dln_get_data(walk));
 
-	walk = dln_get_previous(walk);
+	walk = dln_get_prev(walk);
 	while (walk)
 	{
 		fprintf(stream, " <--> ");
@@ -338,7 +338,7 @@ void dq_print_reversed(
 		else
 			fprintf(stream, "%p", d);
 
-		walk = dln_get_previous(walk);
+		walk = dln_get_prev(walk);
 	}
 
 	fprintf(stream, "\n");

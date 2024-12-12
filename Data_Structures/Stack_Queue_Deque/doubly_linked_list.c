@@ -4,13 +4,13 @@
  * struct double_link_node - a doubly linked list node.
  * @data: data that the node holds.
  * @next: pointer to the next node.
- * @prev: pointer to the previous node.
+ * @previous: pointer to the previous node.
  */
 struct double_link_node
 {
 	void *data;
 	struct double_link_node *next;
-	struct double_link_node *prev;
+	struct double_link_node *previous;
 };
 
 /**
@@ -32,7 +32,7 @@ double_link_node *dln_new(void *const data, dup_func *duplicate_data)
 	if (duplicate_data)
 	{
 		new_node->data = duplicate_data(data);
-		if (!new_node->data)
+		if (!new_node->data && data)
 		{
 			free(new_node);
 			return (NULL);
@@ -58,10 +58,10 @@ double_link_node *dln_insert_after(
 	if (!other_node)
 		return (this_node);
 
-	other_node->prev = this_node;
+	other_node->previous = this_node;
 	other_node->next = this_node->next;
 	if (this_node->next)
-		this_node->next->prev = other_node;
+		this_node->next->previous = other_node;
 
 	this_node->next = other_node;
 	return (other_node);
@@ -84,11 +84,11 @@ double_link_node *dln_insert_before(
 		return (this_node);
 
 	other_node->next = this_node;
-	other_node->prev = this_node->prev;
-	if (this_node->prev)
-		this_node->prev->next = other_node;
+	other_node->previous = this_node->previous;
+	if (this_node->previous)
+		this_node->previous->next = other_node;
 
-	this_node->prev = other_node;
+	this_node->previous = other_node;
 	return (other_node);
 }
 
@@ -108,13 +108,13 @@ void *dln_remove(double_link_node *const node)
 	d = node->data;
 	node->data = NULL;
 	if (node->next)
-		node->next->prev = node->prev;
+		node->next->previous = node->previous;
 
-	if (node->prev)
-		node->prev->next = node->next;
+	if (node->previous)
+		node->previous->next = node->next;
 
 	node->next = NULL;
-	node->prev = NULL;
+	node->previous = NULL;
 	free(node);
 	return (d);
 }
@@ -134,6 +134,36 @@ void *dln_get_data(double_link_node const *const node)
 }
 
 /**
+ * dln_swap_data - replace data in a node.
+ * @node: pointer to the node to modify.
+ * @data: pointer to the data to swap in.
+ * @copy_data: function that will be called to duplicate data, if NULL
+ * only pointer to `data` is stored.
+ *
+ * Return: pointer to the old data in node, NULL on failure.
+ */
+void *dln_swap_data(double_link_node *const node, void *const data, dup_func *copy_data)
+{
+	if (!node)
+		return (NULL);
+
+	void *old_data = dln_get_data(node);
+
+	node->data = data;
+	if (copy_data)
+	{
+		node->data = copy_data(data);
+		if (!node->data && data)
+		{
+			node->data = old_data;
+			return (NULL);
+		}
+	}
+
+	return (old_data);
+}
+
+/**
  * dln_get_next - return a node's successor.
  * @node: the node to query.
  *
@@ -148,17 +178,17 @@ double_link_node *dln_get_next(double_link_node const *const node)
 }
 
 /**
- * dln_get_previous - return a node's predecessor.
+ * dln_get_prev - return a node's predecessor.
  * @node: the node to query.
  *
  * Return: pointer to the previous node.
  */
-double_link_node *dln_get_previous(double_link_node const *const node)
+double_link_node *dln_get_prev(double_link_node const *const node)
 {
 	if (!node)
 		return (NULL);
 
-	return (node->prev);
+	return (node->previous);
 }
 
 /**
@@ -213,7 +243,7 @@ void dll_print_reversed(
 	else
 		fprintf(stream, "%p", dln_get_data(walk));
 
-	walk = dln_get_previous(walk);
+	walk = dln_get_prev(walk);
 	while (walk)
 	{
 		fprintf(stream, " <--> ");
@@ -224,20 +254,20 @@ void dll_print_reversed(
 		else
 			fprintf(stream, "%p", d);
 
-		walk = dln_get_previous(walk);
+		walk = dln_get_prev(walk);
 	}
 
 	fprintf(stream, "\n");
 }
 
 /**
- * dll_delete - delete a doubly linked list from memory.
+ * dll_clear - delete a doubly linked list from memory.
  * @head: pointer to the head of the doubly linked list.
  * @free_data: function that will be called to free data in the nodes.
  *
  * Return: NULL always.
  */
-void *dll_delete(double_link_node *const head, delete_func *free_data)
+void *dll_clear(double_link_node *const head, delete_func *free_data)
 {
 	if (!head)
 		return (NULL);
@@ -248,7 +278,7 @@ void *dll_delete(double_link_node *const head, delete_func *free_data)
 	while (walk->next)
 	{
 		walk = dln_get_next(walk);
-		data = dln_remove(walk->prev);
+		data = dln_remove(walk->previous);
 		if (free_data)
 			free_data(data);
 	}

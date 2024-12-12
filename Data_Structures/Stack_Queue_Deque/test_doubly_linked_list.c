@@ -1,161 +1,516 @@
 #include "linked_lists.h"
-#include <limits.h>
-#include <ctype.h>
-#include <stdbool.h>
+#include "tau/tau.h"
+#include <string.h>
+#include <stdlib.h>
+
+static const unsigned int MAX_STRING_SIZE = 256;
+
+static char original[] = "original";
+static char n1d[] = "one", n2d[] = "two", n3d[] = "three";
 
 /**
- * print_char - prints a char.
- * @stream: stream to print out to.
- * @c: pointer to the char.
+ * fail_dup - failing duplicating function.
+ * @d: unused.
  *
- * Return: same as printf.
+ * Return: NULL.
  */
-static int print_char(FILE *stream, char const *const c)
+static void *fail_dup(void const *const d)
 {
-	if (!c)
-		return (fprintf(stream, "NULL"));
-
-	return (fprintf(stream, "%c", *c));
+	(void)d;
+	return (NULL);
 }
 
 /**
- * print_llint - prints an int.
- * @d: pointer to the int.
+ * dup_str - makes a copy of a string.
+ * @str: pointer to the string.
  *
- * Return: same as printf.
+ * Return: pointer to the new string, NULL on failure.
  */
-static int print_llint(FILE *stream, long long int const *const d)
+static void *dup_str(void const *const str)
 {
-	if (!d)
-		return (fprintf(stream, "NULL"));
+	char const *const s = str;
 
-	return (fprintf(stream, "%lld", *d));
-}
-
-/**
- * dup_llint - make a copy of an int pointer.
- * @n: pointer to the int.
- *
- * Return: pointer to a new int.
- */
-static long long int *dup_llint(long long int const *const n)
-{
-	long long int *const ptr = calloc(1, sizeof(*ptr));
-
-	if (n && ptr)
-		*ptr = *n;
-
-	return (ptr);
-}
-
-/**
- * create_llint_array - create an int array and initialise with a range of values.
- * @len: length of the array to create.
- * @start: starting value.
- * @step: size between each value.
- *
- * Return: pointer to the array, NULL on failure.
- */
-static long long int *create_llint_array(const size_t len, const long long int start, const long long int step)
-{
-	long long int c = start;
-	long long int *new_arr = malloc(len * sizeof(*new_arr));
-
-	if (!new_arr)
+	if (!s)
 		return (NULL);
 
-	for (size_t i = 0; i < len; i++)
+	unsigned int len = 0;
+
+	while (s[len] && len <= MAX_STRING_SIZE)
+		++len;
+
+	char *const s_dup = malloc(sizeof(*s_dup) * (len + 1));
+
+	if (s_dup)
 	{
-		new_arr[i] = c;
-		c += step;
+		memcpy(s_dup, s, sizeof(*s_dup) * len);
+		s_dup[len] = '\0';
 	}
 
-	return (new_arr);
+	return (s_dup);
 }
 
-/**
- * isvowel - checks if a character is a vowel.
- * @c: the character to check.
- *
- * Return: true if the character is a vowel.
- */
-static bool isvowel(const char c)
-{
-	const char lc = tolower(c);
+TAU_MAIN()
 
-	return (lc == 'a' || lc == 'e' || lc == 'i' || lc == 'o' || lc == 'u');
+/*######################################################################*/
+/*######################################################################*/
+
+TEST(node_creation, new_NULL_NULL_returns_NULL)
+{
+	double_link_node *n = dln_new(NULL, NULL);
+
+	REQUIRE(n != NULL, "dln_new() should return non-null pointer");
+	
+	CHECK(dln_get_data(n) == NULL, "data should be NULL");
+	CHECK(dln_get_next(n) == NULL, "pointer to next node should be NULL");
+	CHECK(dln_get_prev(n) == NULL, "pointer to previous node should be NULL");
+	free(n);
 }
 
-/**
- * filter_vowels_and_digits - filter vowels and digits from a linked list inplace.
- * @head: pointer to the head of the list.
- *
- * Return: pointer to the new head.
- */
-static double_link_node *filter_vowels_and_digits(double_link_node *head)
+TEST(node_creation, new_d_NULL_returns_node_with_unchanged_d_pointer)
 {
-	double_link_node *walk = head;
+	char input[] = "input";
+	double_link_node *n = dln_new(input, NULL);
 
-	while (dln_get_next(walk))
-	{
-		walk = dln_get_next(walk);
-		char c = *((char *)dln_get_data(dln_get_previous(walk)));
+	REQUIRE(n != NULL, "dln_new() should return non-null pointer");
 
-		if (!isdigit(c) && !isvowel(c))
-		{
-			double_link_node *prev = dln_get_previous(walk);
-
-			if (prev == head)
-				head = walk;
-
-			dln_remove(prev);
-		}
-	}
-
-	if (!isdigit(*((char *)dln_get_data(walk))) || !isvowel(*((char *)dln_get_data(walk))))
-	{
-		if (head == walk)
-			head = NULL;
-
-		dln_remove(walk);
-	}
-
-	return (head);
+	CHECK(dln_get_data(n) == input, "data should point to the same object");
+	CHECK(dln_get_next(n) == NULL, "pointer to next node should be NULL");
+	CHECK(dln_get_prev(n) == NULL, "pointer to previous node should be NULL");
+	free(n);
 }
 
-/**
- * main - tests for doubly linked list.
- *
- * Return: 0.
- */
-int main(void)
+TEST(node_creation, new_NULL_f_returns_NULL)
 {
-	double_link_node *head = NULL, *walk = NULL;
-	char s[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\" #$ % &'()*+,-./:;<=>?@[\\]^_`{|}~";
+	double_link_node *n = dln_new(NULL, dup_str);
 
-	head = dln_new(s, NULL);
-	walk = head;
-	for (size_t i = 1; i < (sizeof(s) / sizeof(*s)) - 1; i++)
-		walk = dln_insert_after(walk, dln_new(s + i, NULL));
+	REQUIRE(n != NULL, "dln_new() should return non-null pointer");
 
-	dll_print(stdout, head, (print_func *)print_char);
-	putchar('\n');
+	CHECK(dln_get_data(n) == NULL, "data should be NULL");
+	CHECK(dln_get_next(n) == NULL, "pointer to next node should be NULL");
+	CHECK(dln_get_prev(n) == NULL, "pointer to previous node should be NULL");
+	free(n);
+}
 
-	head = filter_vowels_and_digits(head);
-	dll_print(stdout, head, (print_func *)print_char);
-	putchar('\n');
+TEST(node_creation, new_d_f_returns_correct_node)
+{
+	char input[] = "input";
+	double_link_node *n = dln_new(input, dup_str);
 
-	head = dll_delete(head, NULL);
-	const size_t arr_len = 64;
-	long long int *arr = create_llint_array(arr_len, -9000000000000000000, 4205000000);
+	REQUIRE(n != NULL, "dln_new() should return non-null pointer");
+	char *const output = dln_get_data(n);
 
-	head = dln_new(arr, (dup_func *)dup_llint);
-	walk = head;
-	for (size_t i = 1; i < arr_len; i++)
-		walk = dln_insert_after(walk, dln_new(&arr[i], (dup_func *)dup_llint));
+	CHECK(output != input, "data should point to a duplicated object");
+	CHECK_STREQ(output, input, "duplicated data should be equal to input");
+	CHECK(dln_get_next(n) == NULL, "pointer to next node should be NULL");
+	CHECK(dln_get_prev(n) == NULL, "pointer to previous node should be NULL");
+	free(output);
+	free(n);
+}
 
-	dll_print(stdout, head, (print_func *)print_llint);
-	free(arr);
-	head = dll_delete(head, free);
-	return (0);
+TEST(node_creation, new_d_faildup_returns_NULL)
+{
+	char input[] = "input";
+	double_link_node *n = dln_new(input, fail_dup);
+
+	REQUIRE(n == NULL, "dln_new() should return NULL if data duplication fails");
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+TEST(data_get, get_data_handles_NULL)
+{
+	CHECK(dln_get_data(NULL) == NULL, "should not process NULL");
+}
+
+TEST(data_get, get_data_returns_correct_data)
+{
+	char input[] = "input";
+	double_link_node *n1 = dln_new(input, NULL);
+
+	REQUIRE(n1 != NULL, "dln_new() should return non-null pointer");
+	CHECK(dln_get_data(n1) == input, "data should point to the same object");
+	free(n1);
+}
+
+TEST(data_get, get_data_returns_correct_duplicated_data)
+{
+	char input[] = "input";
+	double_link_node *n1 = dln_new(input, dup_str);
+
+	REQUIRE(n1 != NULL, "dln_new() should return non-null pointer");
+	char *const curr_data = dln_get_data(n1);
+
+	CHECK(curr_data != input, "data should point to a duplicated object");
+	CHECK_STREQ(curr_data, input, "duplicated object should be equal to input");
+	free(curr_data);
+	free(n1);
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+struct data_swap
+{
+	double_link_node *n1;
+};
+
+TEST_F_SETUP(data_swap)
+{
+	tau->n1 = dln_new(original, NULL);
+	REQUIRE(tau->n1 != NULL, "dln_new() should return non-null pointer");
+}
+
+TEST_F_TEARDOWN(data_swap) { free(tau->n1); }
+
+TEST(data_swap, swap_NULL_NULL_NULL)
+{
+	CHECK(dln_swap_data(NULL, NULL, NULL) == NULL,
+		  "should not swap NULL pointer");
+	CHECK(dln_swap_data(NULL, "NULL", NULL) == NULL,
+		  "should not swap NULL pointer");
+	CHECK(dln_swap_data(NULL, NULL, fail_dup) == NULL,
+		  "should not swap NULL pointer");
+	CHECK(dln_swap_data(NULL, "NULL", fail_dup) == NULL,
+		  "should not swap NULL pointer");
+}
+
+TEST_F(data_swap, swap_n_d_NULL)
+{
+	char input[] = "input";
+
+	CHECK(dln_swap_data(tau->n1, input, NULL) == original,
+		  "should return old data");
+
+	CHECK(dln_get_data(tau->n1) == input, "data is equal to the input");
+}
+
+TEST_F(data_swap, swap_n_NULL_NULL_nullifies_data)
+{
+	CHECK(dln_swap_data(tau->n1, NULL, NULL) == original,
+		  "should return old data");
+
+	CHECK(dln_get_data(tau->n1) == NULL, "data should be NULL");
+}
+
+TEST_F(data_swap, swap_n_d_faildup_returns_NULL)
+{
+	CHECK(dln_swap_data(tau->n1, "input", fail_dup) == NULL,
+		  "should return NULL on failure to duplicate");
+
+	CHECK(dln_get_data(tau->n1) == original, "data should be unchanged");
+}
+
+TEST_F(data_swap, swap_n_d_f)
+{
+	char *const input = "input";
+
+	CHECK(dln_swap_data(tau->n1, input, dup_str) == original,
+		  "should return old data");
+	char *const curr_data = dln_get_data(tau->n1);
+
+	CHECK(curr_data != input, "data should be duplicated");
+	CHECK_STREQ(curr_data, input, "data should be equal to input");
+	free(curr_data);
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+struct node_insertion
+{
+	double_link_node *n1, *n2, *n3;
+};
+
+TEST_F_SETUP(node_insertion)
+{
+	tau->n1 = dln_new(n1d, NULL);
+	REQUIRE(tau->n1 != NULL, "dln_new() should return non-null pointer");
+	tau->n2 = dln_new(n2d, NULL);
+	REQUIRE(tau->n2 != NULL, "dln_new() should return non-null pointer");
+	tau->n3 = dln_new(n3d, NULL);
+	REQUIRE(tau->n3 != NULL, "dln_new() should return non-null pointer");
+}
+
+TEST_F_TEARDOWN(node_insertion)
+{
+	free(tau->n1);
+	free(tau->n2);
+	free(tau->n3);
+}
+
+TEST(node_insertion, insert_NULLs)
+{
+	CHECK(dln_insert_after(NULL, NULL) == NULL, "nothing is done");
+	CHECK(dln_insert_before(NULL, NULL) == NULL, "nothing is done");
+}
+
+TEST_F(node_insertion, insert_after_NULL)
+{
+	REQUIRE(dln_insert_after(NULL, tau->n2) == tau->n2,
+			"the newly inserted node should be n2");
+
+	CHECK(dln_get_next(tau->n2) == NULL, "n2 next should be unchanged");
+	CHECK(dln_get_prev(tau->n2) == NULL, "n2 previous should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_NULL_after)
+{
+	REQUIRE(dln_insert_after(tau->n1, NULL) == tau->n1,
+			"the newly inserted node should be n1");
+
+	CHECK(dln_get_next(tau->n1) == NULL, "n1 next should be unchanged");
+	CHECK(dln_get_prev(tau->n2) == NULL, "n1 previous should be unchanged");
+	CHECK(dln_get_data(tau->n1) == n1d, "data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_after_1_node)
+{
+	REQUIRE(dln_insert_after(tau->n1, tau->n2) == tau->n2,
+			"the newly inserted node should be n2");
+
+	CHECK(dln_get_next(tau->n2) == NULL, "n2 next should be unchanged");
+	CHECK(dln_get_next(tau->n1) == tau->n2, "n1 next should be n2");
+
+	CHECK(dln_get_prev(tau->n2) == tau->n1, "n2 previous should be n1");
+	CHECK(dln_get_prev(tau->n1) == NULL, "n1 previous should be unchanged");
+
+	CHECK(dln_get_data(tau->n1) == n1d, "n1 data should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "n2 data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_after_2_nodes)
+{
+	double_link_node *output = dln_insert_after(tau->n1, tau->n2);
+
+	REQUIRE(output == tau->n2, "the newly inserted node should be n2");
+	output = dln_insert_after(tau->n2, tau->n3);
+	REQUIRE(output == tau->n3, "the newly inserted node should be n3");
+
+	CHECK(dln_get_next(tau->n3) == NULL, "n3 next should be unchanged");
+	CHECK(dln_get_next(tau->n2) == tau->n3, "n2 next should be n3");
+	CHECK(dln_get_next(tau->n1) == tau->n2, "n1 next should be n2");
+
+	CHECK(dln_get_prev(tau->n3) == tau->n2, "n3 previous should be n2");
+	CHECK(dln_get_prev(tau->n2) == tau->n1, "n2 previous should be n1");
+	CHECK(dln_get_prev(tau->n1) == NULL, "n1 previous should be unchanged");
+
+	CHECK(dln_get_data(tau->n1) == n1d, "n1 data should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "n2 data should be unchanged");
+	CHECK(dln_get_data(tau->n3) == n3d, "n3 data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_after_between_2_nodes)
+{
+	double_link_node *output = dln_insert_after(tau->n1, tau->n3);
+
+	REQUIRE(output == tau->n3, "the newly inserted node should be n3");
+	output = dln_insert_after(tau->n1, tau->n2);
+	REQUIRE(output == tau->n2, "the newly inserted node should be n2");
+
+	CHECK(dln_get_next(tau->n3) == NULL, "n3 next should be unchanged");
+	CHECK(dln_get_next(tau->n2) == tau->n3, "n2 next should be n3");
+	CHECK(dln_get_next(tau->n1) == tau->n2, "n1 next should be n2");
+
+	CHECK(dln_get_prev(tau->n3) == tau->n2, "n3 previous should be n2");
+	CHECK(dln_get_prev(tau->n2) == tau->n1, "n2 previous should be n1");
+	CHECK(dln_get_prev(tau->n1) == NULL, "n1 previous should be unchanged");
+
+	CHECK(dln_get_data(tau->n1) == n1d, "n1 data should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "n2 data should be unchanged");
+	CHECK(dln_get_data(tau->n3) == n3d, "n3 data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_before_NULL)
+{
+	REQUIRE(dln_insert_before(NULL, tau->n2) == tau->n2,
+			"the newly inserted node should be n2");
+
+	CHECK(dln_get_next(tau->n2) == NULL, "n2 next should be unchanged");
+	CHECK(dln_get_prev(tau->n2) == NULL, "n2 previous should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_NULL_before)
+{
+	REQUIRE(dln_insert_before(tau->n1, NULL) == tau->n1,
+			"the newly inserted node should be n1");
+
+	CHECK(dln_get_next(tau->n1) == NULL, "n1 next should be unchanged");
+	CHECK(dln_get_prev(tau->n2) == NULL, "n2 previous should be unchanged");
+	CHECK(dln_get_data(tau->n1) == n1d, "data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_before_1_node)
+{
+	REQUIRE(dln_insert_before(tau->n1, tau->n2) == tau->n2,
+			"the newly inserted node should be n2");
+
+	CHECK(dln_get_next(tau->n1) == NULL, "n1 next should be unchanged");
+	CHECK(dln_get_next(tau->n2) == tau->n1, "n2 next should be n1");
+
+	CHECK(dln_get_prev(tau->n1) == tau->n2, "n2 previous should be n1");
+	CHECK(dln_get_prev(tau->n2) == NULL, "n1 previous should be unchanged");
+
+	CHECK(dln_get_data(tau->n1) == n1d, "n1 data should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "n2 data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_before_2_nodes)
+{
+	double_link_node *output = dln_insert_before(tau->n1, tau->n2);
+
+	REQUIRE(output == tau->n2, "the newly inserted node should be n2");
+	output = dln_insert_before(tau->n2, tau->n3);
+	REQUIRE(output == tau->n3, "the newly inserted node should be n3");
+
+	CHECK(dln_get_next(tau->n1) == NULL, "n1 next should be unchanged");
+	CHECK(dln_get_next(tau->n2) == tau->n1, "n2 next should be n1");
+	CHECK(dln_get_next(tau->n3) == tau->n2, "n3 next should be n2");
+
+	CHECK(dln_get_prev(tau->n1) == tau->n2, "n1 previous should be n2");
+	CHECK(dln_get_prev(tau->n2) == tau->n3, "n2 previous should be n3");
+	CHECK(dln_get_prev(tau->n3) == NULL, "n3 previous should be unchanged");
+
+	CHECK(dln_get_data(tau->n1) == n1d, "n1 data should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "n2 data should be unchanged");
+	CHECK(dln_get_data(tau->n3) == n3d, "n3 data should be unchanged");
+}
+
+TEST_F(node_insertion, insert_before_between_2_nodes)
+{
+	double_link_node *output = dln_insert_before(tau->n1, tau->n3);
+
+	REQUIRE(output == tau->n3, "the newly inserted node should be n3");
+	output = dln_insert_before(tau->n1, tau->n2);
+	REQUIRE(output == tau->n2, "the newly inserted node should be n2");
+
+	CHECK(dln_get_next(tau->n1) == NULL, "n1 next should be unchanged");
+	CHECK(dln_get_next(tau->n2) == tau->n1, "n2 next should be n1");
+	CHECK(dln_get_next(tau->n3) == tau->n2, "n3 next should be n2");
+
+	CHECK(dln_get_prev(tau->n1) == tau->n2, "n1 previous should be n2");
+	CHECK(dln_get_prev(tau->n2) == tau->n3, "n2 previous should be n3");
+	CHECK(dln_get_prev(tau->n3) == NULL, "n3 previous should be unchanged");
+
+	CHECK(dln_get_data(tau->n1) == n1d, "n1 data should be unchanged");
+	CHECK(dln_get_data(tau->n2) == n2d, "n2 data should be unchanged");
+	CHECK(dln_get_data(tau->n3) == n3d, "n3 data should be unchanged");
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+struct node_deletion
+{
+	double_link_node *n1, *n2, *n3;
+};
+
+TEST_F_SETUP(node_deletion)
+{
+	tau->n1 = dln_new(n1d, NULL);
+	REQUIRE(tau->n1 != NULL, "dln_new() should return non-null pointer");
+	tau->n2 = dln_new(n2d, NULL);
+	REQUIRE(tau->n2 != NULL, "dln_new() should return non-null pointer");
+	tau->n3 = dln_new(n3d, NULL);
+	REQUIRE(tau->n3 != NULL, "dln_new() should return non-null pointer");
+
+	/*n1->n2->n3*/
+	dln_insert_after(dln_insert_after(tau->n1, tau->n2), tau->n3);
+}
+
+TEST_F_TEARDOWN(node_deletion)
+{
+	free(tau->n1);
+	free(tau->n2);
+	free(tau->n3);
+}
+
+TEST(node_deletion, remove_NULL)
+{
+	CHECK(dln_remove(NULL) == NULL, "nothing should be done");
+}
+
+TEST(node_deletion, remove_n)
+{
+	double_link_node *n1 = dln_new(original, NULL);
+
+	CHECK(dln_remove(n1) == original,
+		  "node should be freed and its data returned");
+}
+
+TEST_F(node_deletion, remove_first_node_in_list)
+{
+	CHECK(dln_remove(tau->n1) == n1d, "data returned should be n1's");
+	tau->n1 = NULL;
+
+	CHECK(dln_get_next(tau->n2) == tau->n3, "n2 next should be n3");
+	CHECK(dln_get_next(tau->n3) == NULL, "n3 next should be unchanged");
+
+	CHECK(dln_get_prev(tau->n2) == NULL, "n2 previous should be NULL");
+	CHECK(dln_get_prev(tau->n3) == tau->n2, "n3 previous should be n2");
+}
+
+TEST_F(node_deletion, remove_middle_node_in_list)
+{
+	CHECK(dln_remove(tau->n2) == n2d, "data returned should be n2's");
+	tau->n2 = NULL;
+
+	CHECK(dln_get_next(tau->n1) == tau->n3, "n1 next should be n3");
+	CHECK(dln_get_next(tau->n3) == NULL, "n3 next should be unchanged");
+
+	CHECK(dln_get_prev(tau->n1) == NULL, "n1 previous should be unchanged");
+	CHECK(dln_get_prev(tau->n3) == tau->n1, "n3 previous should be n1");
+}
+
+TEST_F(node_deletion, remove_last_node_in_list)
+{
+	CHECK(dln_remove(tau->n3) == n3d, "data returned should be n3's");
+	tau->n3 = NULL;
+
+	CHECK(dln_get_next(tau->n1) == tau->n2, "n1 next should be n2");
+	CHECK(dln_get_next(tau->n2) == NULL, "n2 next should be NULL");
+
+	CHECK(dln_get_prev(tau->n1) == NULL, "n1 previous should be unchanged");
+	CHECK(dln_get_prev(tau->n2) == tau->n1, "n2 previous should be n1");
+}
+
+TEST_F(node_deletion, remove_first_node_of_2_in_list)
+{
+	dln_remove(tau->n3);
+	tau->n3 = NULL;
+
+	CHECK(dln_remove(tau->n1) == n1d, "data returned should be n1's");
+	tau->n1 = NULL;
+
+	CHECK(dln_get_next(tau->n2) == NULL, "n2 next should be unchanged");
+	CHECK(dln_get_prev(tau->n2) == NULL, "n2 next should be NULL");
+}
+
+TEST_F(node_deletion, remove_second_node_of_2_in_list)
+{
+	dln_remove(tau->n3);
+	tau->n3 = NULL;
+
+	CHECK(dln_remove(tau->n2) == n2d, "data returned should be n2's");
+	tau->n2 = NULL;
+
+	CHECK(dln_get_next(tau->n1) == NULL, "n1 next should be NULL");
+	CHECK(dln_get_prev(tau->n1) == NULL, "n1 next should be unchanged");
+}
+
+TEST(node_deletion, clear_NULL)
+{
+	/*Should produce no leaks or UB.*/
+	dll_clear(NULL, NULL);
+}
+
+TEST_F(node_deletion, clear_dll)
+{
+	/*Should produce no leaks or UB.*/
+	dll_clear(tau->n1, NULL);
+	tau->n1 = NULL;
+	tau->n2 = NULL;
+	tau->n3 = NULL;
 }

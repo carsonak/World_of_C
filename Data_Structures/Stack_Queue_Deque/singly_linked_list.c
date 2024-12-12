@@ -4,14 +4,14 @@
  * struct single_link_node - a singly linked list node.
  * @data: data that the node holds.
  * @next: pointer to the next node.
- * @prev: pointer to the previous node.
+ * @previous: pointer to the previous node.
  */
 struct single_link_node
 {
 	void *data;
 	struct single_link_node *next;
-	/*This second pointer is to make insertion and deletion easier.*/
-	struct single_link_node *prev;
+	/*This second pointer makes insertions and deletions easier.*/
+	struct single_link_node *previous;
 };
 
 /**
@@ -59,10 +59,10 @@ single_link_node *sln_insert_after(
 	if (!other_node)
 		return (this_node);
 
-	other_node->prev = this_node;
+	other_node->previous = this_node;
 	other_node->next = this_node->next;
 	if (this_node->next)
-		this_node->next->prev = other_node;
+		this_node->next->previous = other_node;
 
 	this_node->next = other_node;
 	return (other_node);
@@ -85,11 +85,11 @@ single_link_node *sln_insert_before(
 		return (this_node);
 
 	other_node->next = this_node;
-	other_node->prev = this_node->prev;
-	if (this_node->prev)
-		this_node->prev->next = other_node;
+	other_node->previous = this_node->previous;
+	if (this_node->previous)
+		this_node->previous->next = other_node;
 
-	this_node->prev = other_node;
+	this_node->previous = other_node;
 	return (other_node);
 }
 
@@ -108,13 +108,13 @@ void *sln_remove(single_link_node *const node)
 
 	node->data = NULL;
 	if (node->next)
-		node->next->prev = node->prev;
+		node->next->previous = node->previous;
 
-	if (node->prev)
-		node->prev->next = node->next;
+	if (node->previous)
+		node->previous->next = node->next;
 
 	node->next = NULL;
-	node->prev = NULL;
+	node->previous = NULL;
 	free(node);
 	return (d);
 }
@@ -228,7 +228,7 @@ void *sll_clear(single_link_node *const head, delete_func *free_data)
 	while (walk->next)
 	{
 		walk = sln_get_next(walk);
-		data = sln_remove(walk->prev);
+		data = sln_remove(walk->previous);
 		if (free_data)
 			free_data(data);
 	}
