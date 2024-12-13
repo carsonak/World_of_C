@@ -192,75 +192,6 @@ double_link_node *dln_get_prev(double_link_node const *const node)
 }
 
 /**
- * dll_print - print all nodes of a doubly linked list.
- * @stream: pointer to a stream to output to.
- * @head: head of the doubly linked list to print.
- * @print_data: function that will be called to print data in nodes.
- */
-void dll_print(FILE *stream, double_link_node const *const head, print_func *print_data)
-{
-	if (!head)
-		return;
-
-	double_link_node const *walk = head;
-	/*WARNING: need to check return values of printing functions.*/
-	if (print_data)
-		print_data(stream, dln_get_data(walk));
-	else
-		fprintf(stream, "%p", dln_get_data(walk));
-
-	walk = dln_get_next(walk);
-	while (walk)
-	{
-		printf(" <--> ");
-		if (print_data)
-			print_data(stream, dln_get_data(walk));
-		else
-			fprintf(stream, "%p", dln_get_data(walk));
-
-		walk = dln_get_next(walk);
-	}
-
-	fprintf(stream, "\n");
-}
-
-/**
- * dll_print_reversed - print all nodes of a deque from tail to head.
- * @stream: pointer to the stream to output to.
- * @dll: the deque to print.
- * @print_data: function that will be called to print data in nodes.
- */
-void dll_print_reversed(
-	FILE *stream, double_link_node const *const head, print_func *print_data)
-{
-	if (!head)
-		return;
-
-	double_link_node const *walk = head;
-	/*WARNING: need to check return values of the printing functions.*/
-	if (print_data)
-		print_data(stream, dln_get_data(walk));
-	else
-		fprintf(stream, "%p", dln_get_data(walk));
-
-	walk = dln_get_prev(walk);
-	while (walk)
-	{
-		fprintf(stream, " <--> ");
-		void *d = dln_get_data(walk);
-
-		if (print_data)
-			print_data(stream, d);
-		else
-			fprintf(stream, "%p", d);
-
-		walk = dln_get_prev(walk);
-	}
-
-	fprintf(stream, "\n");
-}
-
-/**
  * dll_clear - delete a doubly linked list from memory.
  * @head: pointer to the head of the doubly linked list.
  * @free_data: function that will be called to free data in the nodes.
@@ -288,4 +219,113 @@ void *dll_clear(double_link_node *const head, delete_func *free_data)
 		free_data(data);
 
 	return (NULL);
+}
+
+/**
+ * dll_print - print all nodes of a doubly linked list.
+ * @stream: pointer to a stream to print to.
+ * @head: head of the doubly linked list to print.
+ * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: total bytes printed, negative number on error.
+ */
+long int dll_print(FILE *stream, double_link_node const *const head, print_func *print_data)
+{
+	if (!stream || !head)
+		return (-1);
+
+	long int total_bytes = 0;
+	int bytes_printed = 0;
+	double_link_node const *walk = head;
+
+	if (print_data)
+		bytes_printed = print_data(stream, dln_get_data(walk));
+	else
+		bytes_printed = fprintf(stream, "%p", dln_get_data(walk));
+
+	if (bytes_printed < 0)
+		return (bytes_printed);
+
+	total_bytes += bytes_printed;
+	walk = dln_get_next(walk);
+	while (walk)
+	{
+		bytes_printed = fprintf(stream, " <--> ");
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
+		if (print_data)
+			bytes_printed = print_data(stream, dln_get_data(walk));
+		else
+			bytes_printed = fprintf(stream, "%p", dln_get_data(walk));
+
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
+		walk = dln_get_next(walk);
+	}
+
+	bytes_printed = fprintf(stream, "\n");
+	if (bytes_printed < 0)
+		return (bytes_printed);
+
+	return (total_bytes + bytes_printed);
+}
+
+/**
+ * dll_print_reversed - print all nodes of a deque from tail to head.
+ * @stream: pointer to the stream to output to.
+ * @dll: the deque to print.
+ * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: total bytes printed, negative number on error.
+ */
+long int dll_print_reversed(
+	FILE *stream, double_link_node const *const head, print_func *print_data)
+{
+	if (!stream || !head)
+		return (-1);
+
+	long int total_bytes = 0;
+	int bytes_printed = 0;
+	double_link_node const *walk = head;
+
+	if (print_data)
+		bytes_printed = print_data(stream, dln_get_data(walk));
+	else
+		bytes_printed = fprintf(stream, "%p", dln_get_data(walk));
+
+	if (bytes_printed < 0)
+		return (bytes_printed);
+
+	total_bytes += bytes_printed;
+	walk = dln_get_prev(walk);
+	while (walk)
+	{
+		bytes_printed = fprintf(stream, " <--> ");
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
+		void *d = dln_get_data(walk);
+
+		if (print_data)
+			bytes_printed = print_data(stream, d);
+		else
+			bytes_printed = fprintf(stream, "%p", d);
+
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
+		walk = dln_get_prev(walk);
+	}
+
+	bytes_printed = fprintf(stream, "\n");
+	if (bytes_printed < 0)
+		return (bytes_printed);
+
+	return (total_bytes + bytes_printed);
 }

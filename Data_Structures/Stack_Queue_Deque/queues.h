@@ -5,14 +5,9 @@
 #include <stdio.h>	/* *printf */
 #include <stdlib.h> /* *alloc */
 
-typedef void *(dup_func)(void const *const);
-typedef void(delete_func)(void *const);
-typedef int(print_func)(FILE *, void const *const);
+#include "typedefs.h"
 
 /*queue*/
-
-typedef struct single_link_node single_link_node;
-typedef struct queue queue;
 
 queue *queue_new(void);
 void *queue_delete(queue *const nullable_ptr, delete_func *free_data);
@@ -28,9 +23,6 @@ queue *queue_from_array(
 	dup_func *copy_data, delete_func *delete_data);
 
 /*deque*/
-
-typedef struct double_link_node double_link_node;
-typedef struct deque deque;
 
 deque *dq_new(void);
 size_t dq_len(deque const *const dq);

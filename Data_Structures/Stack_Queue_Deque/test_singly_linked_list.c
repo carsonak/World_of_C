@@ -1,9 +1,10 @@
+#define _POSIX_C_SOURCE 200809L
 #include "linked_lists.h"
 #include "tau/tau.h"
-#include <string.h>
-#include <stdlib.h>
+#include <string.h> /* memcpy */
+#include <stdlib.h> /* *alloc */
 
-static const unsigned int MAX_STRING_SIZE = 256;
+#define MAX_STRING_SIZE ((unsigned int)256)
 
 static const char original[] = "original";
 static const char n1d[] = "one", n2d[] = "two", n3d[] = "three";
@@ -229,10 +230,17 @@ struct node_insertion
 TEST_F_SETUP(node_insertion)
 {
 	tau->n1 = sln_new((char *const)n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "sln_new() should return non-null pointer");
 	tau->n2 = sln_new((char *const)n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "sln_new() should return non-null pointer");
 	tau->n3 = sln_new((char *const)n3d, NULL);
+	if (!tau->n1 || !tau->n2 || !tau->n3)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->n3);
+	}
+
+	REQUIRE(tau->n1 != NULL, "sln_new() should return non-null pointer");
+	REQUIRE(tau->n2 != NULL, "sln_new() should return non-null pointer");
 	REQUIRE(tau->n3 != NULL, "sln_new() should return non-null pointer");
 }
 
@@ -388,10 +396,17 @@ struct node_deletion
 TEST_F_SETUP(node_deletion)
 {
 	tau->n1 = sln_new((char *const)n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "sln_new() should return non-null pointer");
 	tau->n2 = sln_new((char *const)n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "sln_new() should return non-null pointer");
 	tau->n3 = sln_new((char *const)n3d, NULL);
+	if (!tau->n1 || !tau->n2 || !tau->n3)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->n3);
+	}
+
+	REQUIRE(tau->n1 != NULL, "sln_new() should return non-null pointer");
+	REQUIRE(tau->n2 != NULL, "sln_new() should return non-null pointer");
 	REQUIRE(tau->n3 != NULL, "sln_new() should return non-null pointer");
 
 	/*n1->n2->n3*/
@@ -413,6 +428,8 @@ TEST(node_deletion, remove_NULL)
 TEST(node_deletion, remove_n)
 {
 	single_link_node *n1 = sln_new((char *const)original, NULL);
+
+	REQUIRE(n1 != NULL, "sln_new() should return non-null pointer");
 
 	CHECK(sln_remove(n1) == original,
 		  "node should be freed and its data returned");
@@ -480,4 +497,159 @@ TEST_F(node_deletion, clear_sll)
 	tau->n1 = NULL;
 	tau->n2 = NULL;
 	tau->n3 = NULL;
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+static char string_stream[MAX_STRING_SIZE] = {'X'};
+
+/**
+ * print_string - prints a string.
+ * @stream: stream to print to.
+ * @str: pointer to the string.
+ *
+ * Return: same as fprintf.
+ */
+static int print_string(FILE *stream, void const *const str)
+{
+	char const *const s = str;
+
+	if (!s)
+		return (fprintf(stream, "NULL"));
+
+	return (fprintf(stream, "%s", s));
+}
+
+struct print_sll
+{
+	single_link_node *n1, *n2, *n3;
+	FILE *stream;
+};
+
+TEST_F_SETUP(print_sll)
+{
+	string_stream[MAX_STRING_SIZE - 1] = 0;
+	tau->stream = fmemopen(string_stream, MAX_STRING_SIZE, "w");
+	REQUIRE(tau->stream != NULL, "failed to open memstream");
+
+	tau->n1 = sln_new((char *const)n1d, NULL);
+	tau->n2 = sln_new((char *const)n2d, NULL);
+	tau->n3 = sln_new((char *const)n3d, NULL);
+	if (!tau->n1 || !tau->n2 || !tau->n3)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->n3);
+	}
+
+	REQUIRE(tau->n1 != NULL, "sln_new() should return non-null pointer");
+	REQUIRE(tau->n2 != NULL, "sln_new() should return non-null pointer");
+	REQUIRE(tau->n3 != NULL, "sln_new() should return non-null pointer");
+}
+
+TEST_F_TEARDOWN(print_sll)
+{
+	free(tau->n1);
+	free(tau->n2);
+	free(tau->n3);
+	REQUIRE(fclose(tau->stream) == 0, "failed to close memstream");
+	memset(string_stream, 'X', MAX_STRING_SIZE - 1);
+}
+
+TEST_F(print_sll, print_null_arguments)
+{
+	CHECK(sll_print(NULL, NULL, NULL) < 0, "stream pointer and head pointer are required");
+	CHECK(sll_print(tau->stream, NULL, NULL) < 0, "stream pointer and head pointer are required");
+	CHECK(sll_print(NULL, tau->n1, NULL) < 0, "stream pointer and head pointer are required");
+}
+
+TEST_F(print_sll, print_one_node_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
+
+	CHECK(sll_print(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_sll, print_one_node)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%s\n", n1d) > 0, "failed to print to buffer");
+
+	CHECK(sll_print(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_sll, print_two_nodes_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	sln_insert_after(tau->n1, tau->n2);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%p --> %p\n", (void *)n1d, (void *)n2d) > 0,
+			"failed to print to buffer");
+
+	CHECK(sll_print(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_sll, print_two_nodes)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	sln_insert_after(tau->n1, tau->n2);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%s --> %s\n", n1d, n2d) > 0,
+			"failed to print to buffer");
+
+	CHECK(sll_print(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_sll, print_three_nodes_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	sln_insert_after(sln_insert_after(tau->n1, tau->n2), tau->n3);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%p --> %p --> %p\n", (void *)n1d, (void *)n2d, (void *)n3d) > 0,
+			"failed to print to buffer");
+
+	CHECK(sll_print(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_sll, print_three_nodes)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	sln_insert_after(sln_insert_after(tau->n1, tau->n2), tau->n3);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%s --> %s --> %s\n", n1d, n2d, n3d) > 0,
+			"failed to print to buffer");
+
+	CHECK(sll_print(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
 }

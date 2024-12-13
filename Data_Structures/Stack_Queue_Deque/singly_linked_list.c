@@ -178,39 +178,6 @@ single_link_node *sln_get_next(single_link_node const *const node)
 }
 
 /**
- * sll_print - print all nodes of a doubly linked list.
- * @stream: pointer to a stream to output to.
- * @head: head of the doubly linked list to print.
- * @print_data: function that will be called to print data in nodes.
- */
-void sll_print(FILE *stream, single_link_node const *const head, print_func *print_data)
-{
-	if (!head)
-		return;
-
-	single_link_node const *walk = head;
-	/*WARNING: need to check return values of printing functions.*/
-	if (print_data)
-		print_data(stream, sln_get_data(walk));
-	else
-		fprintf(stream, "%p", sln_get_data(walk));
-
-	walk = sln_get_next(walk);
-	while (walk)
-	{
-		printf(" --> ");
-		if (print_data)
-			print_data(stream, sln_get_data(walk));
-		else
-			fprintf(stream, "%p", sln_get_data(walk));
-
-		walk = sln_get_next(walk);
-	}
-
-	fprintf(stream, "\n");
-}
-
-/**
  * sll_clear - delete a doubly linked list from memory.
  * @head: pointer to the head of the doubly linked list.
  * @free_data: function that will be called to free data in the nodes.
@@ -238,4 +205,57 @@ void *sll_clear(single_link_node *const head, delete_func *free_data)
 		free_data(data);
 
 	return (NULL);
+}
+
+/**
+ * sll_print - print all nodes of a doubly linked list.
+ * @stream: pointer to a stream to output to.
+ * @head: head of the doubly linked list to print.
+ * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: total bytes printed, negative number on error.
+ */
+long int sll_print(FILE *stream, single_link_node const *const head, print_func *print_data)
+{
+	if (!stream || !head)
+		return (-1);
+
+	long int total_bytes = 0;
+	int bytes_printed = 0;
+	single_link_node const *walk = head;
+
+	if (print_data)
+		bytes_printed = print_data(stream, sln_get_data(walk));
+	else
+		bytes_printed = fprintf(stream, "%p", sln_get_data(walk));
+
+	if (bytes_printed < 0)
+		return (bytes_printed);
+
+	total_bytes += bytes_printed;
+	walk = sln_get_next(walk);
+	while (walk)
+	{
+		bytes_printed = fprintf(stream, " --> ");
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
+		if (print_data)
+			bytes_printed = print_data(stream, sln_get_data(walk));
+		else
+			bytes_printed = fprintf(stream, "%p", sln_get_data(walk));
+
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
+		walk = sln_get_next(walk);
+	}
+
+	bytes_printed = fprintf(stream, "\n");
+	if (bytes_printed < 0)
+		return (bytes_printed);
+
+	return (total_bytes + bytes_printed);
 }

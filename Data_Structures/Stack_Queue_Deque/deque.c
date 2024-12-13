@@ -3,13 +3,13 @@
 
 /**
  * struct deque - a deque data structure.
- * @size: number items in the deque.
+ * @length: number items in the deque.
  * @head: a pointer to the head of the deque.
  * @tail: a pointer to the tail of the deque.
  */
 struct deque
 {
-	size_t size;
+	size_t length;
 	double_link_node *head;
 	double_link_node *tail;
 };
@@ -32,7 +32,7 @@ size_t dq_len(deque const *const dq)
 	if (!dq)
 		return (0);
 
-	return (dq->size);
+	return (dq->length);
 }
 
 /**
@@ -88,7 +88,7 @@ double_link_node *dq_push_tail(
 	if (!dq->head)
 		dq->head = nw;
 
-	++(dq->size);
+	++(dq->length);
 	return (nw);
 }
 
@@ -111,8 +111,8 @@ void *dq_pop_tail(deque *dq)
 	if (!dq->tail)
 		dq->head = NULL;
 
-	if (dq->size)
-		--(dq->size);
+	if (dq->length)
+		--(dq->length);
 
 	return (d);
 }
@@ -140,7 +140,7 @@ double_link_node *dq_push_head(
 	if (!dq->tail)
 		dq->tail = nw;
 
-	++(dq->size);
+	++(dq->length);
 	return (nw);
 }
 
@@ -163,8 +163,8 @@ void *dq_pop_head(deque *const dq)
 	if (!dq->head)
 		dq->tail = NULL;
 
-	if (dq->size)
-		--(dq->size);
+	if (dq->length)
+		--(dq->length);
 
 	return (d);
 }
@@ -199,7 +199,7 @@ static void clear_deque(deque *const dq, delete_func *free_data)
 
 	dq->head = NULL;
 	dq->tail = NULL;
-	dq->size = 0;
+	dq->length = 0;
 }
 
 /**

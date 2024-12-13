@@ -3,13 +3,13 @@
 
 /**
  * struct queue - a queue data structure.
- * @size: number items in the queue.
+ * @length: number items in the queue.
  * @head: a pointer to the head of the queue.
  * @tail: a pointer to the tail of the queue.
  */
 struct queue
 {
-	size_t size;
+	size_t length;
 	single_link_node *head;
 	single_link_node *tail;
 };
@@ -32,7 +32,7 @@ size_t queue_len(queue const *const q)
 	if (!q)
 		return (0);
 
-	return (q->size);
+	return (q->length);
 }
 
 /**
@@ -47,12 +47,11 @@ size_t queue_len(queue const *const q)
 single_link_node *enqueue(
 	queue *const q, void *const data, dup_func *copy_data)
 {
-	single_link_node *nw = NULL;
-
 	if (!q)
 		return (NULL);
 
-	nw = sln_new(data, copy_data);
+	single_link_node *const nw = sln_new(data, copy_data);
+
 	if (!nw)
 		return (NULL);
 
@@ -60,7 +59,7 @@ single_link_node *enqueue(
 	if (!q->head)
 		q->head = nw;
 
-	q->size++;
+	q->length++;
 	return (nw);
 }
 
@@ -72,20 +71,19 @@ single_link_node *enqueue(
  */
 void *dequeue(queue *const q)
 {
-	single_link_node *node = NULL;
-	void *d = NULL;
-
 	if (!q || !q->head)
 		return (NULL);
 
-	node = q->head;
+	single_link_node *const node = q->head;
+
 	q->head = sln_get_next(node);
-	d = sln_remove(node);
+	void *const d = sln_remove(node);
+
 	if (!q->head)
 		q->tail = NULL;
 
-	if (q->size)
-		q->size--;
+	if (q->length)
+		q->length--;
 
 	return (d);
 }
@@ -125,30 +123,12 @@ void *queue_peek_last(queue const *const q)
  */
 static void clear_queue(queue *const q, delete_func *free_data)
 {
-	single_link_node *next_node = NULL;
-	void *d = NULL;
-
-	if (!q || !q->head)
+	if (!q)
 		return;
 
-	next_node = sln_get_next(q->head);
-	while (next_node)
-	{
-		d = sln_remove(q->head);
-		if (free_data)
-			free_data(d);
-
-		q->head = next_node;
-		next_node = sln_get_next(q->head);
-	}
-
-	d = sln_remove(q->head);
-	if (free_data)
-		free_data(d);
-
-	q->head = NULL;
+	q->head = sll_clear(q->head, free_data);
 	q->tail = NULL;
-	q->size = 0;
+	q->length = 0;
 }
 
 /**
@@ -179,8 +159,6 @@ queue *queue_from_array(
 	void *const data_array, const size_t len, const size_t type_size,
 	dup_func *copy_data, delete_func *delete_data)
 {
-	queue *new_q = NULL;
-
 	if (!data_array || len == 0)
 		return (NULL);
 
@@ -188,7 +166,8 @@ queue *queue_from_array(
 	if (copy_data && !delete_data)
 		return (NULL);
 
-	new_q = queue_new();
+	queue *new_q = queue_new();
+
 	if (!new_q)
 		return (NULL);
 
@@ -214,8 +193,6 @@ queue *queue_from_array(
  */
 void queue_print(FILE *stream, queue const *const q, print_func *print_data)
 {
-	single_link_node const *walk = NULL;
-
 	if (!q)
 		return;
 
@@ -225,26 +202,5 @@ void queue_print(FILE *stream, queue const *const q, print_func *print_data)
 		return;
 	}
 
-	/*WARNING: need to check return values of the printing functions.*/
-	walk = q->head;
-	if (print_data)
-		print_data(stream, sln_get_data(walk));
-	else
-		fprintf(stream, "%p", sln_get_data(walk));
-
-	walk = sln_get_next(walk);
-	while (walk)
-	{
-		fprintf(stream, " --> ");
-		void *d = sln_get_data(walk);
-
-		if (print_data)
-			print_data(stream, d);
-		else
-			fprintf(stream, "%p", d);
-
-		walk = sln_get_next(walk);
-	}
-
-	fprintf(stream, "\n");
+	sll_print(stream, q->head, print_data);
 }

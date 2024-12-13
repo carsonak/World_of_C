@@ -1,9 +1,10 @@
+#define _POSIX_C_SOURCE 200809L
 #include "linked_lists.h"
 #include "tau/tau.h"
 #include <string.h>
 #include <stdlib.h>
 
-static const unsigned int MAX_STRING_SIZE = 256;
+#define MAX_STRING_SIZE ((unsigned int)256)
 
 static char original[] = "original";
 static char n1d[] = "one", n2d[] = "two", n3d[] = "three";
@@ -59,7 +60,7 @@ TEST(node_creation, new_NULL_NULL_returns_NULL)
 	double_link_node *n = dln_new(NULL, NULL);
 
 	REQUIRE(n != NULL, "dln_new() should return non-null pointer");
-	
+
 	CHECK(dln_get_data(n) == NULL, "data should be NULL");
 	CHECK(dln_get_next(n) == NULL, "pointer to next node should be NULL");
 	CHECK(dln_get_prev(n) == NULL, "pointer to previous node should be NULL");
@@ -224,11 +225,18 @@ struct node_insertion
 
 TEST_F_SETUP(node_insertion)
 {
-	tau->n1 = dln_new(n1d, NULL);
+	tau->n1 = dln_new((char *const)n1d, NULL);
+	tau->n2 = dln_new((char *const)n2d, NULL);
+	tau->n3 = dln_new((char *const)n3d, NULL);
+	if (!tau->n1 || !tau->n2 || !tau->n3)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->n3);
+	}
+
 	REQUIRE(tau->n1 != NULL, "dln_new() should return non-null pointer");
-	tau->n2 = dln_new(n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "dln_new() should return non-null pointer");
-	tau->n3 = dln_new(n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "dln_new() should return non-null pointer");
 }
 
@@ -409,11 +417,18 @@ struct node_deletion
 
 TEST_F_SETUP(node_deletion)
 {
-	tau->n1 = dln_new(n1d, NULL);
+	tau->n1 = dln_new((char *const)n1d, NULL);
+	tau->n2 = dln_new((char *const)n2d, NULL);
+	tau->n3 = dln_new((char *const)n3d, NULL);
+	if (!tau->n1 || !tau->n2 || !tau->n3)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->n3);
+	}
+
 	REQUIRE(tau->n1 != NULL, "dln_new() should return non-null pointer");
-	tau->n2 = dln_new(n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "dln_new() should return non-null pointer");
-	tau->n3 = dln_new(n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "dln_new() should return non-null pointer");
 
 	/*n1->n2->n3*/
@@ -513,4 +528,259 @@ TEST_F(node_deletion, clear_dll)
 	tau->n1 = NULL;
 	tau->n2 = NULL;
 	tau->n3 = NULL;
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+static char string_stream[MAX_STRING_SIZE] = {'X'};
+
+/**
+ * print_string - prints a string.
+ * @stream: stream to print to.
+ * @str: pointer to the string.
+ *
+ * Return: same as fprintf.
+ */
+static int print_string(FILE *stream, void const *const str)
+{
+	char const *const s = str;
+
+	if (!s)
+		return (fprintf(stream, "NULL"));
+
+	return (fprintf(stream, "%s", s));
+}
+
+struct print_dll
+{
+	double_link_node *n1, *n2, *n3;
+	FILE *stream;
+};
+
+TEST_F_SETUP(print_dll)
+{
+	string_stream[MAX_STRING_SIZE - 1] = 0;
+	tau->stream = fmemopen(string_stream, MAX_STRING_SIZE, "w");
+	REQUIRE(tau->stream != NULL, "failed to open memstream");
+
+	tau->n1 = dln_new((char *const)n1d, NULL);
+	tau->n2 = dln_new((char *const)n2d, NULL);
+	tau->n3 = dln_new((char *const)n3d, NULL);
+	if (!tau->n1 || !tau->n2 || !tau->n3)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->n3);
+	}
+
+	REQUIRE(tau->n1 != NULL, "dln_new() should return non-null pointer");
+	REQUIRE(tau->n2 != NULL, "dln_new() should return non-null pointer");
+	REQUIRE(tau->n3 != NULL, "dln_new() should return non-null pointer");
+}
+
+TEST_F_TEARDOWN(print_dll)
+{
+	free(tau->n1);
+	free(tau->n2);
+	free(tau->n3);
+	REQUIRE(fclose(tau->stream) == 0, "failed to close memstream");
+	memset(string_stream, 'X', MAX_STRING_SIZE - 1);
+}
+
+TEST_F(print_dll, print_null_arguments)
+{
+	CHECK(dll_print(NULL, NULL, NULL) < 0, "stream pointer and head pointer are required");
+	CHECK(dll_print(tau->stream, NULL, NULL) < 0, "stream pointer and head pointer are required");
+	CHECK(dll_print(NULL, tau->n1, NULL) < 0, "stream pointer and head pointer are required");
+}
+
+TEST_F(print_dll, print_one_node_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
+
+	CHECK(dll_print(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, print_one_node)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%s\n", n1d) > 0, "failed to print to buffer");
+
+	CHECK(dll_print(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, print_two_nodes_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_after(tau->n1, tau->n2);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%p <--> %p\n", (void *)n1d, (void *)n2d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, print_two_nodes)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_after(tau->n1, tau->n2);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%s <--> %s\n", n1d, n2d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, print_three_nodes_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_after(dln_insert_after(tau->n1, tau->n2), tau->n3);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%p <--> %p <--> %p\n", (void *)n1d, (void *)n2d, (void *)n3d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, print_three_nodes)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_after(dln_insert_after(tau->n1, tau->n2), tau->n3);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%s <--> %s <--> %s\n", n1d, n2d, n3d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
+TEST_F(print_dll, printrev_null_arguments)
+{
+	CHECK(dll_print_reversed(NULL, NULL, NULL) < 0, "stream pointer and head pointer are required");
+	CHECK(dll_print_reversed(tau->stream, NULL, NULL) < 0, "stream pointer and head pointer are required");
+	CHECK(dll_print_reversed(NULL, tau->n1, NULL) < 0, "stream pointer and head pointer are required");
+}
+
+TEST_F(print_dll, printrev_one_node_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
+
+	CHECK(dll_print_reversed(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, printrev_one_node)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%s\n", n1d) > 0, "failed to print to buffer");
+
+	CHECK(dll_print_reversed(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, printrev_two_nodes_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_before(tau->n1, tau->n2);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%p <--> %p\n", (void *)n1d, (void *)n2d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print_reversed(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, printrev_two_nodes)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_before(tau->n1, tau->n2);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%s <--> %s\n", n1d, n2d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print_reversed(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, printrev_three_nodes_no_print_function)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_before(dln_insert_before(tau->n1, tau->n2), tau->n3);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%p <--> %p <--> %p\n", (void *)n1d, (void *)n2d, (void *)n3d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print_reversed(tau->stream, tau->n1, NULL) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
+}
+
+TEST_F(print_dll, printrev_three_nodes)
+{
+	char expected[MAX_STRING_SIZE] = {'\0'};
+
+	dln_insert_before(dln_insert_before(tau->n1, tau->n2), tau->n3);
+	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+					 "%s <--> %s <--> %s\n", n1d, n2d, n3d) > 0,
+			"failed to print to buffer");
+
+	CHECK(dll_print_reversed(tau->stream, tau->n1, print_string) > 0,
+		  "number of bytes printed should be > 0");
+	REQUIRE(fflush(tau->stream) == 0, "failed to flush buffer");
+
+	CHECK_STREQ(string_stream, expected, "output and expected should be equal");
 }
