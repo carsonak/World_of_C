@@ -224,7 +224,7 @@ void *dll_clear(double_link_node *const head, delete_func *free_data)
 /**
  * dll_print - print all nodes of a doubly linked list.
  * @stream: pointer to a stream to print to.
- * @head: head of the doubly linked list to print.
+ * @head: pointer to the head of the doubly linked list to print.
  * @print_data: function that will be called to print data in nodes.
  *
  * Return: total bytes printed, negative number on error.
@@ -277,20 +277,20 @@ long int dll_print(FILE *stream, double_link_node const *const head, print_func 
 /**
  * dll_print_reversed - print all nodes of a deque from tail to head.
  * @stream: pointer to the stream to output to.
- * @dll: the deque to print.
+ * @tail: pointer to the tail of the deque to print.
  * @print_data: function that will be called to print data in nodes.
  *
  * Return: total bytes printed, negative number on error.
  */
 long int dll_print_reversed(
-	FILE *stream, double_link_node const *const head, print_func *print_data)
+	FILE *stream, double_link_node const *const tail, print_func *print_data)
 {
-	if (!stream || !head)
+	if (!stream || !tail)
 		return (-1);
 
 	long int total_bytes = 0;
 	int bytes_printed = 0;
-	double_link_node const *walk = head;
+	double_link_node const *walk = tail;
 
 	if (print_data)
 		bytes_printed = print_data(stream, dln_get_data(walk));

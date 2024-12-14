@@ -39,6 +39,6 @@ void *dll_clear(double_link_node *const head, delete_func *free_data);
 long int dll_print(
 	FILE *stream, double_link_node const *const head, print_func *print_data);
 long int dll_print_reversed(
-	FILE *stream, double_link_node const *const head, print_func *print_data);
+	FILE *stream, double_link_node const *const tail, print_func *print_data);
 
 #endif /* LINKED_NODES_H */

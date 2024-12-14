@@ -159,7 +159,7 @@ queue *queue_from_array(
 	void *const data_array, const size_t len, const size_t type_size,
 	dup_func *copy_data, delete_func *delete_data)
 {
-	if (!data_array || len == 0)
+	if (!data_array || len == 0 || type_size == 0)
 		return (NULL);
 
 	/*Avoid memory leaks by rejecting imbalanced allocation deallocation.*/
@@ -190,17 +190,16 @@ queue *queue_from_array(
  * @stream: pointer to the stream to output to.
  * @q: the queue to print.
  * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: total bytes printed, negative number on error.
  */
-void queue_print(FILE *stream, queue const *const q, print_func *print_data)
+long int queue_print(FILE *stream, queue const *const q, print_func *print_data)
 {
-	if (!q)
-		return;
+	if (!stream || !q)
+		return (-1);
 
 	if (!q->head)
-	{
-		fprintf(stream, "(NULL)\n");
-		return;
-	}
+		return (fprintf(stream, "(NULL)\n"));
 
-	sll_print(stream, q->head, print_data);
+	return (sll_print(stream, q->head, print_data));
 }

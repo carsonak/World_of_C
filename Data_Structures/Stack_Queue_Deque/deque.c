@@ -262,42 +262,18 @@ deque *dq_from_array(
  * @stream: pointer to the stream to output to.
  * @dq: the deque to print.
  * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: number of bytes printed, negative number on error.
  */
-void dq_print(FILE *stream, deque const *const dq, print_func *print_data)
+long int dq_print(FILE *stream, deque const *const dq, print_func *print_data)
 {
-	double_link_node const *walk = NULL;
-
-	if (!dq)
+	if (!stream || !dq)
 		return;
 
 	if (!dq->head)
-	{
-		fprintf(stream, "(NULL)\n");
-		return;
-	}
+		return (fprintf(stream, "(NULL)\n"));
 
-	/*WARNING: need to check return values of the printing functions.*/
-	walk = dq->head;
-	if (print_data)
-		print_data(stream, dln_get_data(walk));
-	else
-		fprintf(stream, "%p", dln_get_data(walk));
-
-	walk = dln_get_next(walk);
-	while (walk)
-	{
-		fprintf(stream, " <--> ");
-		void *d = dln_get_data(walk);
-
-		if (print_data)
-			print_data(stream, d);
-		else
-			fprintf(stream, "%p", d);
-
-		walk = dln_get_next(walk);
-	}
-
-	fprintf(stream, "\n");
+	return (dll_print(stream, dq->head, print_data));
 }
 
 /**
@@ -305,41 +281,17 @@ void dq_print(FILE *stream, deque const *const dq, print_func *print_data)
  * @stream: pointer to the stream to output to.
  * @dq: the deque to print.
  * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: number of bytes printed, negative number on error.
  */
-void dq_print_reversed(
+long int dq_print_reversed(
 	FILE *stream, deque const *const dq, print_func *print_data)
 {
-	double_link_node const *walk = NULL;
-
-	if (!dq)
-		return;
+	if (!stream || !dq)
+		return (-1);
 
 	if (!dq->tail)
-	{
-		fprintf(stream, "(NULL)\n");
-		return;
-	}
+		return (fprintf(stream, "(NULL)\n"));
 
-	/*WARNING: need to check return values of the printing functions.*/
-	walk = dq->tail;
-	if (print_data)
-		print_data(stream, dln_get_data(walk));
-	else
-		fprintf(stream, "%p", dln_get_data(walk));
-
-	walk = dln_get_prev(walk);
-	while (walk)
-	{
-		fprintf(stream, " <--> ");
-		void *d = dln_get_data(walk);
-
-		if (print_data)
-			print_data(stream, d);
-		else
-			fprintf(stream, "%p", d);
-
-		walk = dln_get_prev(walk);
-	}
-
-	fprintf(stream, "\n");
+	return (dll_print_reversed(stream, dq->tail, print_data));
 }

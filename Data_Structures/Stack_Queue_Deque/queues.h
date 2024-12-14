@@ -17,10 +17,10 @@ single_link_node *enqueue(
 void *dequeue(queue *const q);
 void *queue_peek_first(queue const *const q);
 void *queue_peek_last(queue const *const q);
-void queue_print(FILE *stream, queue const *const q, print_func *print_data);
 queue *queue_from_array(
 	void *const data_array, const size_t len, const size_t type_size,
 	dup_func *copy_data, delete_func *delete_data);
+long int queue_print(FILE *stream, queue const *const q, print_func *print_data);
 
 /*deque*/
 
@@ -35,8 +35,8 @@ double_link_node *dq_push_tail(
 	deque *const dq, void *const data, dup_func *copy_data);
 void *dq_pop_tail(deque *dq);
 void *dq_delete(deque *const nullable_ptr, delete_func *free_data);
-void dq_print(FILE *stream, deque const *const dq, print_func *print_data);
-void dq_print_reversed(
+long int dq_print(FILE *stream, deque const *const dq, print_func *print_data);
+long int dq_print_reversed(
 	FILE *stream, deque const *const dq, print_func *print_data);
 deque *dq_from_array(
 	void *const data_array, const size_t len, const size_t type_size,
