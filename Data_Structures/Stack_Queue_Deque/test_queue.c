@@ -4,7 +4,7 @@
 
 #define MAX_STRING_LENGTH 256U
 
-char n1d[] = "one", n2d[] = "two", n3d[] = "three";
+static char n1d[] = "one", n2d[] = "two", n3d[] = "three", n4d[] = "four";
 
 /**
  * fail_dup - failing duplicating function.
@@ -287,6 +287,121 @@ TEST_F(removing_items, dequeue_1_node_from_3)
 /*######################################################################*/
 /*######################################################################*/
 
+struct add_and_remove
+{
+	single_link_node *n1, *n2, *n3, *n4;
+	queue *q;
+};
+
+TEST_F_SETUP(add_and_remove)
+{
+	tau->q = queue_new();
+	tau->n1 = enqueue(tau->q, n1d, NULL);
+	tau->n2 = enqueue(tau->q, n2d, NULL);
+	if (!tau->q || !tau->n1 || !tau->n2)
+	{
+		free(tau->n1);
+		free(tau->n2);
+		free(tau->q);
+	}
+
+	REQUIRE(tau->q, "queue_new() returns non-null");
+	REQUIRE(tau->n1, "enqueue() returns non-null");
+	REQUIRE(tau->n2, "enqueue() returns non-null");
+}
+
+TEST_F_TEARDOWN(add_and_remove)
+{
+	free(tau->q);
+	free(tau->n1);
+	free(tau->n2);
+	free(tau->n3);
+	free(tau->n4);
+}
+
+TEST_F(add_and_remove, add_remove)
+{
+	tau->n3 = enqueue(tau->q, n3d, NULL);
+	REQUIRE(tau->n3, "n3 is added");
+	CHECK(dequeue(tau->q) == n1d, "n1 is removed from the head");
+	tau->n1 = NULL;
+
+	CHECK(queue_len(tau->q) == 2, "number of items is unchanged");
+	CHECK(queue_peek_first(tau->q) == n2d, "head should be updated to n2");
+	CHECK(queue_peek_last(tau->q) == n3d, "tail should be updated to n3.");
+}
+
+TEST_F(add_and_remove, remove_add)
+{
+	CHECK(dequeue(tau->q) == n1d, "n1 is removed from the head");
+	tau->n1 = NULL;
+	tau->n3 = enqueue(tau->q, n3d, NULL);
+	REQUIRE(tau->n3, "n3 is added");
+
+	CHECK(queue_len(tau->q) == 2, "number of items is unchanged");
+	CHECK(queue_peek_first(tau->q) == n2d, "head should be updated to n2");
+	CHECK(queue_peek_last(tau->q) == n3d, "tail should be updated to n3.");
+}
+
+TEST_F(add_and_remove, add_add_remove)
+{
+	tau->n3 = enqueue(tau->q, n3d, NULL);
+	REQUIRE(tau->n3, "n3 is added");
+	tau->n4 = enqueue(tau->q, n4d, NULL);
+	REQUIRE(tau->n4, "n4 is added");
+	CHECK(dequeue(tau->q) == n1d, "n1 is removed from the head");
+	tau->n1 = NULL;
+
+	CHECK(queue_len(tau->q) == 3, "number of items is unchanged");
+	CHECK(queue_peek_first(tau->q) == n2d, "head should be updated to n2");
+	CHECK(queue_peek_last(tau->q) == n4d, "tail should be updated to n4.");
+}
+
+TEST_F(add_and_remove, remove_remove_add)
+{
+	CHECK(dequeue(tau->q) == n1d, "n1 is removed from the head");
+	tau->n1 = NULL;
+	CHECK(dequeue(tau->q) == n2d, "n2 is removed from the head");
+	tau->n2 = NULL;
+	tau->n3 = enqueue(tau->q, n3d, NULL);
+	REQUIRE(tau->n3, "n3 is added");
+
+	CHECK(queue_len(tau->q) == 1, "number of items is unchanged");
+	CHECK(queue_peek_first(tau->q) == n3d, "head should be updated to n3");
+	CHECK(queue_peek_last(tau->q) == n3d, "tail should be updated to n3.");
+}
+
+TEST_F(add_and_remove, add_remove_remove)
+{
+	tau->n3 = enqueue(tau->q, n3d, NULL);
+	REQUIRE(tau->n3, "n3 is added");
+	CHECK(dequeue(tau->q) == n1d, "n1 is removed from the head");
+	tau->n1 = NULL;
+	CHECK(dequeue(tau->q) == n2d, "n2 is removed from the head");
+	tau->n2 = NULL;
+
+	CHECK(queue_len(tau->q) == 1, "number of items is unchanged");
+	CHECK(queue_peek_first(tau->q) == n3d, "head should be updated to n3");
+	CHECK(queue_peek_last(tau->q) == n3d, "tail should be updated to n3.");
+}
+
+TEST_F(add_and_remove, remove_add_add)
+{
+	CHECK(dequeue(tau->q) == n1d, "n1 is removed from the head");
+	tau->n1 = NULL;
+	tau->n3 = enqueue(tau->q, n3d, NULL);
+	REQUIRE(tau->n3, "n3 is added");
+	tau->n4 = enqueue(tau->q, n4d, NULL);
+	REQUIRE(tau->n4, "n4 is added");
+
+	CHECK(queue_len(tau->q) == 3, "number of items is unchanged");
+	CHECK(queue_peek_first(tau->q) == n2d, "head should be updated to n2");
+	CHECK(queue_peek_last(tau->q) == n4d, "tail should be updated to n4.");
+}
+
+/*######################################################################*/
+/*######################################################################*/
+
 TEST(deleting_queue, delete_should_clear_all_items)
 {
 	queue *q = queue_new();
@@ -373,7 +488,7 @@ TEST(qfa, queue_from_array)
 	CHECK(*(long long int *)dequeue(q) == arr[2]);
 	CHECK(*(long long int *)dequeue(q) == arr[3]);
 	CHECK(*(long long int *)dequeue(q) == arr[4]);
-	CHECK(queue_len(q) == 0, "there should now be 0 items in the list");
+	CHECK(queue_len(q) == 0, "there should now be 0 items in the queue");
 	CHECK(queue_peek_first(q) == NULL, "head should be NULL");
 	CHECK(queue_peek_last(q) == NULL, "tail should be NULL");
 

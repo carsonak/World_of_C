@@ -59,7 +59,7 @@ single_link_node *enqueue(
 	if (!q->head)
 		q->head = nw;
 
-	q->length++;
+	++(q->length);
 	return (nw);
 }
 
@@ -83,7 +83,7 @@ void *dequeue(queue *const q)
 		q->tail = NULL;
 
 	if (q->length)
-		q->length--;
+		--(q->length);
 
 	return (d);
 }
@@ -171,7 +171,7 @@ queue *queue_from_array(
 	if (!new_q)
 		return (NULL);
 
-	for (size_t i = 0; i < len; i++)
+	for (size_t i = 0; i < len; ++i)
 	{
 		void *data = (char *)data_array + (type_size * i);
 
@@ -187,7 +187,7 @@ queue *queue_from_array(
 
 /**
  * queue_print - print all nodes of a queue.
- * @stream: pointer to the stream to output to.
+ * @stream: pointer to the stream to print to.
  * @q: the queue to print.
  * @print_data: function that will be called to print data in nodes.
  *

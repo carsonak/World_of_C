@@ -205,7 +205,7 @@ void hashmap_print(const HashMap *hm)
 		return;
 
 	printf("{");
-	for (i = 0; i < hm->size; i++)
+	for (i = 0; i < hm->size; ++i)
 	{
 		if (comma && space)
 			break;

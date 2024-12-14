@@ -243,7 +243,7 @@ deque *dq_from_array(
 	if (!new_q)
 		return (NULL);
 
-	for (size_t i = 0; i < len; i++)
+	for (size_t i = 0; i < len; ++i)
 	{
 		void *data = (char *)data_array + (type_size * i);
 
@@ -259,7 +259,7 @@ deque *dq_from_array(
 
 /**
  * dq_print - print all nodes of a deque.
- * @stream: pointer to the stream to output to.
+ * @stream: pointer to the stream to print to.
  * @dq: the deque to print.
  * @print_data: function that will be called to print data in nodes.
  *
@@ -278,7 +278,7 @@ long int dq_print(FILE *stream, deque const *const dq, print_func *print_data)
 
 /**
  * dq_print_reversed - print all nodes of a deque from tail to head.
- * @stream: pointer to the stream to output to.
+ * @stream: pointer to the stream to print to.
  * @dq: the deque to print.
  * @print_data: function that will be called to print data in nodes.
  *

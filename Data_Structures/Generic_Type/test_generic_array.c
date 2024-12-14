@@ -10,7 +10,7 @@ static void genarr_overwrite(Generic_Array *ga, const void *const data)
 {
 	const size_t len = genarr_len(ga);
 
-	for (size_t i = 0; i <= len + 3; i++)
+	for (size_t i = 0; i <= len + 3; ++i)
 		genarr_index_put(ga, i, data);
 }
 

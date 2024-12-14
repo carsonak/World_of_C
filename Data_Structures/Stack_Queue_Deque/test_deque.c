@@ -77,7 +77,7 @@ static long long int *create_llint_array(const size_t len, const long long int s
 	if (!new_arr)
 		return (NULL);
 
-	for (size_t i = 0; i < len; i++)
+	for (size_t i = 0; i < len; ++i)
 	{
 		new_arr[i] = c;
 		c += step;
