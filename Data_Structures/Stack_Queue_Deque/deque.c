@@ -232,7 +232,7 @@ deque *dq_from_array(
 {
 	deque *new_q = NULL;
 
-	if (!data_array || len == 0)
+	if (!data_array || len == 0 || type_size == 0)
 		return (NULL);
 
 	/*Avoid memory leaks by rejecting imbalanced allocation deallocation.*/
@@ -268,7 +268,7 @@ deque *dq_from_array(
 long int dq_print(FILE *stream, deque const *const dq, print_func *print_data)
 {
 	if (!stream || !dq)
-		return;
+		return (-1);
 
 	if (!dq->head)
 		return (fprintf(stream, "(NULL)\n"));

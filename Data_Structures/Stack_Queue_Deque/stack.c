@@ -100,28 +100,10 @@ void *stk_pop(stack *const s)
  */
 static void clear_stack(stack *const s, delete_func *free_data)
 {
-	single_link_node *next_node = NULL;
-	void *d = NULL;
-
 	if (!s || !s->top)
 		return;
 
-	next_node = sln_get_next(s->top);
-	while (next_node)
-	{
-		d = sln_remove(s->top);
-		if (free_data)
-			free_data(d);
-
-		s->top = next_node;
-		next_node = sln_get_next(s->top);
-	}
-
-	d = sln_remove(s->top);
-	if (free_data)
-		free_data(d);
-
-	s->top = NULL;
+	s->top = sll_clear(s->top, free_data);
 	s->len = 0;
 }
 
@@ -144,32 +126,45 @@ void *stk_delete(stack *const nullable_ptr, delete_func *free_data)
  * @stream: pointer to stream to write to.
  * @s: the stack to print.
  * @print_data: function that will be called to print data in nodes.
+ *
+ * Return: number of bytes printed, a negative number on error.
  */
-void stk_print(FILE *stream, stack const *const s, print_func *print_data)
+long int stk_print(FILE *stream, stack const *const s, print_func *print_data)
 {
-	single_link_node *walk = NULL;
-
-	if (!s)
-		return;
+	if (!stream || !s)
+		return (-1);
 
 	if (!s->top)
-	{
-		fprintf(stream, "(NULL)\n");
-		return;
-	}
+		return (fprintf(stream, "(NULL)\n"));
 
-	walk = s->top;
+	single_link_node *walk = s->top;
+	long int total_bytes = 0;
+	int bytes_printed = 0;
 	while (walk)
 	{
-		fprintf(stream, "+ ");
+		bytes_printed = fprintf(stream, "+ ");
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
 		void *d = sln_get_data(walk);
 
 		if (print_data)
-			print_data(stream, d);
+			bytes_printed = print_data(stream, d);
 		else
-			fprintf(stream, "%p", d);
+			bytes_printed = fprintf(stream, "%p", d);
 
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
 		fprintf(stream, "\n++++++++++++\n");
+		if (bytes_printed < 0)
+			return (bytes_printed);
+
+		total_bytes += bytes_printed;
 		walk = sln_get_next(walk);
 	}
+
+	return (total_bytes);
 }

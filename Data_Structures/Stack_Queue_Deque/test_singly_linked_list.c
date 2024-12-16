@@ -4,10 +4,10 @@
 #include <string.h> /* memcpy */
 #include <stdlib.h> /* *alloc */
 
-#define MAX_STRING_SIZE ((unsigned int)256)
+#define MAX_STRING_LENGTH ((unsigned int)256)
 
-static const char original[] = "original";
-static const char n1d[] = "one", n2d[] = "two", n3d[] = "three";
+static char original[] = "original";
+static char n1d[] = "one", n2d[] = "two", n3d[] = "three";
 
 /**
  * fail_dup - failing duplicating function.
@@ -36,7 +36,7 @@ static void *dup_str(void const *const str)
 
 	unsigned int len = 0;
 
-	while (s[len] && len <= MAX_STRING_SIZE)
+	while (s[len] && len <= MAX_STRING_LENGTH)
 		++len;
 
 	char *const s_dup = malloc(sizeof(*s_dup) * (len + 1));
@@ -161,7 +161,7 @@ struct data_swap
 
 TEST_F_SETUP(data_swap)
 {
-	tau->n1 = sln_new((char *const)original, NULL);
+	tau->n1 = sln_new(original, NULL);
 	REQUIRE(tau->n1 != NULL, "sln_new() should return non-null pointer");
 }
 
@@ -229,9 +229,9 @@ struct node_insertion
 
 TEST_F_SETUP(node_insertion)
 {
-	tau->n1 = sln_new((char *const)n1d, NULL);
-	tau->n2 = sln_new((char *const)n2d, NULL);
-	tau->n3 = sln_new((char *const)n3d, NULL);
+	tau->n1 = sln_new(n1d, NULL);
+	tau->n2 = sln_new(n2d, NULL);
+	tau->n3 = sln_new(n3d, NULL);
 	if (!tau->n1 || !tau->n2 || !tau->n3)
 	{
 		free(tau->n1);
@@ -395,9 +395,9 @@ struct node_deletion
 
 TEST_F_SETUP(node_deletion)
 {
-	tau->n1 = sln_new((char *const)n1d, NULL);
-	tau->n2 = sln_new((char *const)n2d, NULL);
-	tau->n3 = sln_new((char *const)n3d, NULL);
+	tau->n1 = sln_new(n1d, NULL);
+	tau->n2 = sln_new(n2d, NULL);
+	tau->n3 = sln_new(n3d, NULL);
 	if (!tau->n1 || !tau->n2 || !tau->n3)
 	{
 		free(tau->n1);
@@ -427,7 +427,7 @@ TEST(node_deletion, remove_NULL)
 
 TEST(node_deletion, remove_n)
 {
-	single_link_node *n1 = sln_new((char *const)original, NULL);
+	single_link_node *n1 = sln_new(original, NULL);
 
 	REQUIRE(n1 != NULL, "sln_new() should return non-null pointer");
 
@@ -502,7 +502,7 @@ TEST_F(node_deletion, clear_sll)
 /*######################################################################*/
 /*######################################################################*/
 
-static char string_stream[MAX_STRING_SIZE] = {'X'};
+static char string_stream[MAX_STRING_LENGTH] = {'X'};
 
 /**
  * print_string - prints a string.
@@ -529,13 +529,13 @@ struct print_sll
 
 TEST_F_SETUP(print_sll)
 {
-	string_stream[MAX_STRING_SIZE - 1] = 0;
-	tau->stream = fmemopen(string_stream, MAX_STRING_SIZE, "w");
+	string_stream[MAX_STRING_LENGTH - 1] = 0;
+	tau->stream = fmemopen(string_stream, MAX_STRING_LENGTH, "w");
 	REQUIRE(tau->stream != NULL, "failed to open memstream");
 
-	tau->n1 = sln_new((char *const)n1d, NULL);
-	tau->n2 = sln_new((char *const)n2d, NULL);
-	tau->n3 = sln_new((char *const)n3d, NULL);
+	tau->n1 = sln_new(n1d, NULL);
+	tau->n2 = sln_new(n2d, NULL);
+	tau->n3 = sln_new(n3d, NULL);
 	if (!tau->n1 || !tau->n2 || !tau->n3)
 	{
 		free(tau->n1);
@@ -554,7 +554,7 @@ TEST_F_TEARDOWN(print_sll)
 	free(tau->n2);
 	free(tau->n3);
 	REQUIRE(fclose(tau->stream) == 0, "failed to close memstream");
-	memset(string_stream, 'X', MAX_STRING_SIZE - 1);
+	memset(string_stream, 'X', MAX_STRING_LENGTH - 1);
 }
 
 TEST_F(print_sll, print_null_arguments)
@@ -566,9 +566,9 @@ TEST_F(print_sll, print_null_arguments)
 
 TEST_F(print_sll, print_one_node_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
 
 	CHECK(sll_print(tau->stream, tau->n1, NULL) > 0,
 		  "number of bytes printed should be > 0");
@@ -579,9 +579,9 @@ TEST_F(print_sll, print_one_node_no_print_function)
 
 TEST_F(print_sll, print_one_node)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%s\n", n1d) > 0, "failed to print to buffer");
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH, "%s\n", n1d) > 0, "failed to print to buffer");
 
 	CHECK(sll_print(tau->stream, tau->n1, print_string) > 0,
 		  "number of bytes printed should be > 0");
@@ -592,10 +592,10 @@ TEST_F(print_sll, print_one_node)
 
 TEST_F(print_sll, print_two_nodes_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	sln_insert_after(tau->n1, tau->n2);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%p --> %p\n", (void *)n1d, (void *)n2d) > 0,
 			"failed to print to buffer");
 
@@ -608,10 +608,10 @@ TEST_F(print_sll, print_two_nodes_no_print_function)
 
 TEST_F(print_sll, print_two_nodes)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	sln_insert_after(tau->n1, tau->n2);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%s --> %s\n", n1d, n2d) > 0,
 			"failed to print to buffer");
 
@@ -624,10 +624,10 @@ TEST_F(print_sll, print_two_nodes)
 
 TEST_F(print_sll, print_three_nodes_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	sln_insert_after(sln_insert_after(tau->n1, tau->n2), tau->n3);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%p --> %p --> %p\n", (void *)n1d, (void *)n2d, (void *)n3d) > 0,
 			"failed to print to buffer");
 
@@ -640,10 +640,10 @@ TEST_F(print_sll, print_three_nodes_no_print_function)
 
 TEST_F(print_sll, print_three_nodes)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	sln_insert_after(sln_insert_after(tau->n1, tau->n2), tau->n3);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%s --> %s --> %s\n", n1d, n2d, n3d) > 0,
 			"failed to print to buffer");
 

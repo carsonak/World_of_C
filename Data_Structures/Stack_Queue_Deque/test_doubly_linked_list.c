@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_STRING_SIZE ((unsigned int)256)
+#define MAX_STRING_LENGTH ((unsigned int)256)
 
 static char original[] = "original";
 static char n1d[] = "one", n2d[] = "two", n3d[] = "three";
@@ -36,7 +36,7 @@ static void *dup_str(void const *const str)
 
 	unsigned int len = 0;
 
-	while (s[len] && len <= MAX_STRING_SIZE)
+	while (s[len] && len <= MAX_STRING_LENGTH)
 		++len;
 
 	char *const s_dup = malloc(sizeof(*s_dup) * (len + 1));
@@ -533,7 +533,7 @@ TEST_F(node_deletion, clear_dll)
 /*######################################################################*/
 /*######################################################################*/
 
-static char string_stream[MAX_STRING_SIZE] = {'X'};
+static char string_stream[MAX_STRING_LENGTH] = {'X'};
 
 /**
  * print_string - prints a string.
@@ -560,8 +560,8 @@ struct print_dll
 
 TEST_F_SETUP(print_dll)
 {
-	string_stream[MAX_STRING_SIZE - 1] = 0;
-	tau->stream = fmemopen(string_stream, MAX_STRING_SIZE, "w");
+	string_stream[MAX_STRING_LENGTH - 1] = 0;
+	tau->stream = fmemopen(string_stream, MAX_STRING_LENGTH, "w");
 	REQUIRE(tau->stream != NULL, "failed to open memstream");
 
 	tau->n1 = dln_new((char *const)n1d, NULL);
@@ -585,7 +585,7 @@ TEST_F_TEARDOWN(print_dll)
 	free(tau->n2);
 	free(tau->n3);
 	REQUIRE(fclose(tau->stream) == 0, "failed to close memstream");
-	memset(string_stream, 'X', MAX_STRING_SIZE - 1);
+	memset(string_stream, 'X', MAX_STRING_LENGTH - 1);
 }
 
 TEST_F(print_dll, print_null_arguments)
@@ -597,9 +597,9 @@ TEST_F(print_dll, print_null_arguments)
 
 TEST_F(print_dll, print_one_node_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
 
 	CHECK(dll_print(tau->stream, tau->n1, NULL) > 0,
 		  "number of bytes printed should be > 0");
@@ -610,9 +610,9 @@ TEST_F(print_dll, print_one_node_no_print_function)
 
 TEST_F(print_dll, print_one_node)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%s\n", n1d) > 0, "failed to print to buffer");
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH, "%s\n", n1d) > 0, "failed to print to buffer");
 
 	CHECK(dll_print(tau->stream, tau->n1, print_string) > 0,
 		  "number of bytes printed should be > 0");
@@ -623,10 +623,10 @@ TEST_F(print_dll, print_one_node)
 
 TEST_F(print_dll, print_two_nodes_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_after(tau->n1, tau->n2);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%p <--> %p\n", (void *)n1d, (void *)n2d) > 0,
 			"failed to print to buffer");
 
@@ -639,10 +639,10 @@ TEST_F(print_dll, print_two_nodes_no_print_function)
 
 TEST_F(print_dll, print_two_nodes)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_after(tau->n1, tau->n2);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%s <--> %s\n", n1d, n2d) > 0,
 			"failed to print to buffer");
 
@@ -655,10 +655,10 @@ TEST_F(print_dll, print_two_nodes)
 
 TEST_F(print_dll, print_three_nodes_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_after(dln_insert_after(tau->n1, tau->n2), tau->n3);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%p <--> %p <--> %p\n", (void *)n1d, (void *)n2d, (void *)n3d) > 0,
 			"failed to print to buffer");
 
@@ -671,10 +671,10 @@ TEST_F(print_dll, print_three_nodes_no_print_function)
 
 TEST_F(print_dll, print_three_nodes)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_after(dln_insert_after(tau->n1, tau->n2), tau->n3);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%s <--> %s <--> %s\n", n1d, n2d, n3d) > 0,
 			"failed to print to buffer");
 
@@ -697,9 +697,9 @@ TEST_F(print_dll, printrev_null_arguments)
 
 TEST_F(print_dll, printrev_one_node_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH, "%p\n", (void *)n1d) > 0, "failed to print to buffer");
 
 	CHECK(dll_print_reversed(tau->stream, tau->n1, NULL) > 0,
 		  "number of bytes printed should be > 0");
@@ -710,9 +710,9 @@ TEST_F(print_dll, printrev_one_node_no_print_function)
 
 TEST_F(print_dll, printrev_one_node)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE, "%s\n", n1d) > 0, "failed to print to buffer");
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH, "%s\n", n1d) > 0, "failed to print to buffer");
 
 	CHECK(dll_print_reversed(tau->stream, tau->n1, print_string) > 0,
 		  "number of bytes printed should be > 0");
@@ -723,10 +723,10 @@ TEST_F(print_dll, printrev_one_node)
 
 TEST_F(print_dll, printrev_two_nodes_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_before(tau->n1, tau->n2);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%p <--> %p\n", (void *)n1d, (void *)n2d) > 0,
 			"failed to print to buffer");
 
@@ -739,10 +739,10 @@ TEST_F(print_dll, printrev_two_nodes_no_print_function)
 
 TEST_F(print_dll, printrev_two_nodes)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_before(tau->n1, tau->n2);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%s <--> %s\n", n1d, n2d) > 0,
 			"failed to print to buffer");
 
@@ -755,10 +755,10 @@ TEST_F(print_dll, printrev_two_nodes)
 
 TEST_F(print_dll, printrev_three_nodes_no_print_function)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_before(dln_insert_before(tau->n1, tau->n2), tau->n3);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%p <--> %p <--> %p\n", (void *)n1d, (void *)n2d, (void *)n3d) > 0,
 			"failed to print to buffer");
 
@@ -771,10 +771,10 @@ TEST_F(print_dll, printrev_three_nodes_no_print_function)
 
 TEST_F(print_dll, printrev_three_nodes)
 {
-	char expected[MAX_STRING_SIZE] = {'\0'};
+	char expected[MAX_STRING_LENGTH] = {'\0'};
 
 	dln_insert_before(dln_insert_before(tau->n1, tau->n2), tau->n3);
-	REQUIRE(snprintf(expected, MAX_STRING_SIZE,
+	REQUIRE(snprintf(expected, MAX_STRING_LENGTH,
 					 "%s <--> %s <--> %s\n", n1d, n2d, n3d) > 0,
 			"failed to print to buffer");
 
