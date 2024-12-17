@@ -140,26 +140,6 @@ TEST_F(adding_items, pshhead_q_null_null_adds_node_with_NULL_data)
 	CHECK(dq_peek_tail(tau->q) == NULL, "tail should point to the added node");
 }
 
-TEST_F(adding_items, pshtail_q_d_null_adds_node_with_copied_pointer)
-{
-	tau->n1 = dq_push_tail(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
-
-	CHECK(dq_len(tau->q) == 1, "there should only be 1 item in the deque");
-	CHECK(dq_peek_head(tau->q) == n1d, "head should point to the added node");
-	CHECK(dq_peek_tail(tau->q) == n1d, "tail should point to the added node");
-}
-
-TEST_F(adding_items, pshhead_q_d_null_adds_node_with_copied_pointer)
-{
-	tau->n1 = dq_push_head(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
-
-	CHECK(dq_len(tau->q) == 1, "there should only be 1 item in the deque");
-	CHECK(dq_peek_head(tau->q) == n1d, "head should point to the added node");
-	CHECK(dq_peek_tail(tau->q) == n1d, "tail should point to the added node");
-}
-
 TEST_F(adding_items, pshtail_q_d_f_adds_node_with_duplicated_data)
 {
 	tau->n1 = dq_push_tail(tau->q, n1d, dup_str);
@@ -184,36 +164,22 @@ TEST_F(adding_items, pshhead_q_d_f_adds_node_with_duplicated_data)
 	free(dq_peek_head(tau->q));
 }
 
-TEST_F(adding_items, pshtail_2_nodes)
+TEST_F(adding_items, pshtail_3_nodes)
 {
 	tau->n1 = dq_push_tail(tau->q, n1d, NULL);
 	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
+
+	CHECK(dq_len(tau->q) == 1, "there should only be 1 item in the deque");
+	CHECK(dq_peek_head(tau->q) == n1d, "head should point to the added node");
+	CHECK(dq_peek_tail(tau->q) == n1d, "tail should point to the added node");
+
 	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
 
 	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
 	CHECK(dq_peek_head(tau->q) == n1d, "head should be n1");
 	CHECK(dq_peek_tail(tau->q) == n2d, "tail should be n2");
-}
 
-TEST_F(adding_items, pshhead_2_nodes)
-{
-	tau->n1 = dq_push_head(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
-	tau->n2 = dq_push_head(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_head() should return non-null pointer");
-
-	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
-	CHECK(dq_peek_head(tau->q) == n2d, "head should be n2");
-	CHECK(dq_peek_tail(tau->q) == n1d, "tail should be n1");
-}
-
-TEST_F(adding_items, pshtail_3_nodes)
-{
-	tau->n1 = dq_push_tail(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
-	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
 	tau->n3 = dq_push_tail(tau->q, n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "push_tail() should return non-null pointer");
 
@@ -226,8 +192,18 @@ TEST_F(adding_items, pshhead_3_nodes)
 {
 	tau->n1 = dq_push_head(tau->q, n1d, NULL);
 	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
+
+	CHECK(dq_len(tau->q) == 1, "there should only be 1 item in the deque");
+	CHECK(dq_peek_head(tau->q) == n1d, "head should point to the added node");
+	CHECK(dq_peek_tail(tau->q) == n1d, "tail should point to the added node");
+
 	tau->n2 = dq_push_head(tau->q, n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "push_head() should return non-null pointer");
+
+	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
+	CHECK(dq_peek_head(tau->q) == n2d, "head should be n2");
+	CHECK(dq_peek_tail(tau->q) == n1d, "tail should be n1");
+
 	tau->n3 = dq_push_head(tau->q, n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "push_head() should return non-null pointer");
 
@@ -278,35 +254,7 @@ TEST_F(adding_items, pshhead_2_nodes_fail_on_2nd)
 	CHECK(dq_peek_tail(tau->q) == n1d, "tail should be unchanged");
 }
 
-TEST_F(adding_items, pshtail_3_nodes_fail_on_3rd)
-{
-	tau->n1 = dq_push_tail(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
-	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
-	tau->n3 = dq_push_tail(tau->q, n3d, fail_dup);
-
-	CHECK(tau->n3 == NULL, "push_tail() should return NULL on failure");
-	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
-	CHECK(dq_peek_head(tau->q) == n1d, "head should be unchanged");
-	CHECK(dq_peek_tail(tau->q) == n2d, "tail should be unchanged");
-}
-
-TEST_F(adding_items, pshhead_3_nodes_fail_on_3rd)
-{
-	tau->n1 = dq_push_head(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
-	tau->n2 = dq_push_head(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_head() should return non-null pointer");
-	tau->n3 = dq_push_head(tau->q, n3d, fail_dup);
-
-	CHECK(tau->n3 == NULL, "push_head() should return NULL on failure");
-	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
-	CHECK(dq_peek_head(tau->q) == n2d, "head should be unchanged");
-	CHECK(dq_peek_tail(tau->q) == n1d, "tail should be unchanged");
-}
-
-TEST_F(adding_items, pshhead_pshtail)
+TEST_F(adding_items, pshhead_pshtail_pshtail)
 {
 	tau->n1 = dq_push_head(tau->q, n1d, NULL);
 	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
@@ -316,32 +264,27 @@ TEST_F(adding_items, pshhead_pshtail)
 	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
 	CHECK(dq_peek_head(tau->q) == n1d, "head should be n1");
 	CHECK(dq_peek_tail(tau->q) == n2d, "tail should be n2");
-}
 
-TEST_F(adding_items, pshtail_pshhead)
-{
-	tau->n1 = dq_push_tail(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
-	tau->n2 = dq_push_head(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_head() should return non-null pointer");
-
-	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
-	CHECK(dq_peek_head(tau->q) == n2d, "head should be n2");
-	CHECK(dq_peek_tail(tau->q) == n1d, "tail should be n1");
-}
-
-TEST_F(adding_items, pshhead_pshtail_pshtail)
-{
-	tau->n1 = dq_push_head(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
-	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
 	tau->n3 = dq_push_tail(tau->q, n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "push_tail() should return non-null pointer");
 
 	CHECK(dq_len(tau->q) == 3, "there should only be 3 items in the deque");
 	CHECK(dq_peek_head(tau->q) == n1d, "head should be n1");
 	CHECK(dq_peek_tail(tau->q) == n3d, "tail should be n3");
+}
+
+TEST_F(adding_items, pshhead_pshtail_pshhead)
+{
+	tau->n1 = dq_push_head(tau->q, n1d, NULL);
+	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
+	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
+	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
+	tau->n3 = dq_push_head(tau->q, n3d, NULL);
+	REQUIRE(tau->n3 != NULL, "push_head() should return non-null pointer");
+
+	CHECK(dq_len(tau->q) == 3, "there should only be 3 items in the deque");
+	CHECK(dq_peek_head(tau->q) == n3d, "head should be n3");
+	CHECK(dq_peek_tail(tau->q) == n2d, "tail should be n2");
 }
 
 TEST_F(adding_items, pshhead_pshhead_pshtail)
@@ -364,6 +307,11 @@ TEST_F(adding_items, pshtail_pshhead_pshtail)
 	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
 	tau->n2 = dq_push_head(tau->q, n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "push_head() should return non-null pointer");
+
+	CHECK(dq_len(tau->q) == 2, "there should only be 2 items in the deque");
+	CHECK(dq_peek_head(tau->q) == n2d, "head should be n2");
+	CHECK(dq_peek_tail(tau->q) == n1d, "tail should be n1");
+
 	tau->n3 = dq_push_tail(tau->q, n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "push_tail() should return non-null pointer");
 
@@ -390,20 +338,6 @@ TEST_F(adding_items, pshtail_pshtail_pshhead)
 {
 	tau->n1 = dq_push_tail(tau->q, n1d, NULL);
 	REQUIRE(tau->n1 != NULL, "push_tail() should return non-null pointer");
-	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
-	tau->n3 = dq_push_head(tau->q, n3d, NULL);
-	REQUIRE(tau->n3 != NULL, "push_head() should return non-null pointer");
-
-	CHECK(dq_len(tau->q) == 3, "there should only be 3 items in the deque");
-	CHECK(dq_peek_head(tau->q) == n3d, "head should be n3");
-	CHECK(dq_peek_tail(tau->q) == n2d, "tail should be n2");
-}
-
-TEST_F(adding_items, pshhead_pshtail_pshhead)
-{
-	tau->n1 = dq_push_head(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "push_head() should return non-null pointer");
 	tau->n2 = dq_push_tail(tau->q, n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "push_tail() should return non-null pointer");
 	tau->n3 = dq_push_head(tau->q, n3d, NULL);

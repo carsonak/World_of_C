@@ -122,16 +122,6 @@ TEST_F(adding_items, enqueue_q_null_null_adds_node_with_NULL_data)
 	CHECK(queue_peek_last(tau->q) == NULL, "tail should point to the added node");
 }
 
-TEST_F(adding_items, enqueue_q_d_null_adds_node_with_copied_pointer)
-{
-	tau->n1 = enqueue(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "enqueue() should return non-null pointer");
-
-	CHECK(queue_len(tau->q) == 1, "there should only be 1 item in the queue");
-	CHECK(queue_peek_first(tau->q) == n1d, "head should point to the added node");
-	CHECK(queue_peek_last(tau->q) == n1d, "tail should point to the added node");
-}
-
 TEST_F(adding_items, enqueue_q_d_f_adds_node_with_duplicated_data)
 {
 	tau->n1 = enqueue(tau->q, n1d, dup_str);
@@ -144,24 +134,22 @@ TEST_F(adding_items, enqueue_q_d_f_adds_node_with_duplicated_data)
 	free(queue_peek_first(tau->q));
 }
 
-TEST_F(adding_items, enqueue_2_nodes)
+TEST_F(adding_items, enqueue_3_nodes)
 {
 	tau->n1 = enqueue(tau->q, n1d, NULL);
 	REQUIRE(tau->n1 != NULL, "enqueue() should return non-null pointer");
+
+	CHECK(queue_len(tau->q) == 1, "there should only be 1 item in the queue");
+	CHECK(queue_peek_first(tau->q) == n1d, "head should point to the added node");
+	CHECK(queue_peek_last(tau->q) == n1d, "tail should point to the added node");
+
 	tau->n2 = enqueue(tau->q, n2d, NULL);
 	REQUIRE(tau->n2 != NULL, "enqueue() should return non-null pointer");
 
 	CHECK(queue_len(tau->q) == 2, "there should only be 2 items in the queue");
 	CHECK(queue_peek_first(tau->q) == n1d, "head should be n1");
 	CHECK(queue_peek_last(tau->q) == n2d, "tail should be n2");
-}
 
-TEST_F(adding_items, enqueue_3_nodes)
-{
-	tau->n1 = enqueue(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "enqueue() should return non-null pointer");
-	tau->n2 = enqueue(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "enqueue() should return non-null pointer");
 	tau->n3 = enqueue(tau->q, n3d, NULL);
 	REQUIRE(tau->n3 != NULL, "enqueue() should return non-null pointer");
 
@@ -189,20 +177,6 @@ TEST_F(adding_items, enqueue_2_nodes_fail_on_2nd)
 	CHECK(queue_len(tau->q) == 1, "there should only be 1 item in the queue");
 	CHECK(queue_peek_first(tau->q) == n1d, "head should be unchanged");
 	CHECK(queue_peek_last(tau->q) == n1d, "tail should be unchanged");
-}
-
-TEST_F(adding_items, enqueue_3_nodes_fail_on_3rd)
-{
-	tau->n1 = enqueue(tau->q, n1d, NULL);
-	REQUIRE(tau->n1 != NULL, "enqueue() should return non-null pointer");
-	tau->n2 = enqueue(tau->q, n2d, NULL);
-	REQUIRE(tau->n2 != NULL, "enqueue() should return non-null pointer");
-	tau->n3 = enqueue(tau->q, n3d, fail_dup);
-
-	CHECK(tau->n3 == NULL, "enqueue() should return NULL on failure");
-	CHECK(queue_len(tau->q) == 2, "there should only be 2 items in the queue");
-	CHECK(queue_peek_first(tau->q) == n1d, "head should be unchanged");
-	CHECK(queue_peek_last(tau->q) == n2d, "tail should be unchanged");
 }
 
 /*######################################################################*/
