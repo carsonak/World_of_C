@@ -1,11 +1,12 @@
-#include "main.h"
+#include <limits.h>
+#include <stdio.h>
 
 /**
  * print_number - stores a number in a string
  * @num: integer passed.
  * @str: buffer to store the number
  */
-void print_number(int num, char *str)
+static void print_number(int num, char *str)
 {
 	int var = 1, index = 0;
 	char b;
