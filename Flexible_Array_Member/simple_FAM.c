@@ -15,6 +15,8 @@ int main(void)
 	report(sizeof(s));
 	report(s->len);
 	printf("s->str: %s\n", s->str);
+	s->str = "World!";
+	printf("s->str: %s\n", s->str);
 	free(s);
 	return (0);
 }

@@ -25,7 +25,7 @@ struct String
 	char str[] ATTR_COUNTED_BY(len);
 };
 
-/*According to ISO C11: Structs with Flexible Array Members cannot be */
-/*contained in arrays or other structs.*/
+/* According to ISO C11: Structs with Flexible Array Members cannot be  */
+/* contained in arrays or other structs. */
 
 #endif /*FAM_H*/
