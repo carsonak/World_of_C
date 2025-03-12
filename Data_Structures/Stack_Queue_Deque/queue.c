@@ -150,8 +150,10 @@ void *queue_delete(queue *const nullable_ptr, delete_func *free_data)
  * @data_array: the array of objects.
  * @len: number of items in the array.
  * @type_size: size of the type in the array.
- * @copy_data: function that will be used to copy the objects.
- * @delete_data: function that will be used to delete objects.
+ * @copy_data: pointer to a function that will be used to copy the objects.
+ * @delete_data: pointer to a function that will be used to delete objects.
+ * This function must be provided if `copy_data` is provided, otherwise leaks
+ * may occur when function returns early.
  *
  * Return: pointer to the new queue, NULL on failure.
  */
@@ -183,6 +185,48 @@ queue *queue_from_array(
 	}
 
 	return (new_q);
+}
+
+/**
+ * queue_to_array - create an array from a queue.
+ * @q: the queue.
+ * @copy_data: optional pointer to a function that will be used to duplicate
+ * the data, if not provided, array will contain pointers to the original data
+ * in the queue.
+ * @free_data: optional pointer to a function that will be used to free data in
+ * the array in case of failure. If `copy_data` is provided this function must
+ * also be provided, otherwise no data duplication will occur.
+ *
+ * Return: pointer to the data array on success, NULL on failure.
+ */
+void **queue_to_array(
+	const queue *const q, dup_func *copy_data, delete_func *free_data)
+{
+	void **data_array = NULL;
+	single_link_node *node = NULL;
+	size_t d_i = 0;
+
+	if (!q || !q->head || q->length < 1)
+		return (NULL);
+
+	data_array = calloc(q->length + 1, sizeof(*data_array));
+	if (!data_array)
+		return (NULL);
+
+	for (node = q->head, d_i = 0; node; node = sln_get_next(node), ++d_i)
+	{
+		void *data = sln_get_data(node);
+
+		data_array[d_i] = data;
+		if (copy_data && free_data)
+		{
+			data_array[d_i] = copy_data(data);
+			if (!data_array[d_i] && data)
+				return (delete_2D_array(data_array, q->length, free_data));
+		}
+	}
+
+	return (data_array);
 }
 
 /**

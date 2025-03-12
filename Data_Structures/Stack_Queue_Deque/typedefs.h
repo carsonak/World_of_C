@@ -1,7 +1,7 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
 
-#include <stdio.h>
+#include <stdio.h> /* FILE */
 
 /**
  * dup_func - a function that duplicates an object.

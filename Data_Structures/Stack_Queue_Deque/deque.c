@@ -258,6 +258,48 @@ deque *dq_from_array(
 }
 
 /**
+ * dq_to_array - create an array from a deque.
+ * @q: the deque.
+ * @copy_data: optional pointer to a function that will be used to duplicate
+ * the data, if not provided, array will contain pointers to the original data
+ * in the deque.
+ * @free_data: optional pointer to a function that will be used to free data in
+ * the array in case of failure. If `copy_data` is provided this function must
+ * also be provided, otherwise no data duplication will occur.
+ *
+ * Return: pointer to the data array on success, NULL on failure.
+ */
+void **dq_to_array(
+	const deque *const q, dup_func *copy_data, delete_func *free_data)
+{
+	void **data_array = NULL;
+	double_link_node *node = NULL;
+	size_t d_i = 0;
+
+	if (!q || !q->head || q->length < 1)
+		return (NULL);
+
+	data_array = calloc(q->length + 1, sizeof(*data_array));
+	if (!data_array)
+		return (NULL);
+
+	for (node = q->head, d_i = 0; node; node = dln_get_next(node), ++d_i)
+	{
+		void *data = dln_get_data(node);
+
+		data_array[d_i] = data;
+		if (copy_data && free_data)
+		{
+			data_array[d_i] = copy_data(data);
+			if (!data_array[d_i] && data)
+				return (delete_2D_array(data_array, q->length, free_data));
+		}
+	}
+
+	return (data_array);
+}
+
+/**
  * dq_print - print all nodes of a deque.
  * @stream: pointer to the stream to print to.
  * @dq: the deque to print.
