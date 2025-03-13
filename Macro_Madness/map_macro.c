@@ -1,4 +1,5 @@
-
+/* https://stackoverflow.com/a/13459454 */
+/* https://github.com/swansontec/map-macro */
 #define EVAL0(...) __VA_ARGS__
 #define EVAL1(...) EVAL0(EVAL0(EVAL0(__VA_ARGS__)))
 #define EVAL2(...) EVAL1(EVAL1(EVAL1(__VA_ARGS__)))
