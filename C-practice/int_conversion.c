@@ -2,11 +2,11 @@
 #include <stdio.h>
 
 /**
- * print_number - stores a number in a string
+ * int_to_str - stores a number in a string
  * @num: integer passed.
  * @str: buffer to store the number
  */
-static void print_number(int num, char *str)
+static void int_to_str(int num, char *str)
 {
 	int var = 1, index = 0;
 	char b;
@@ -42,7 +42,7 @@ int main(void)
 {
 	char s[100];
 
-	print_number(INT_MIN, s);
+	int_to_str(INT_MIN, s);
 	printf("%s\n", s);
 	return (0);
 }

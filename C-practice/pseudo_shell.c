@@ -15,8 +15,8 @@
 int main(void)
 {
 	char *argv[3], input[] = "/usr/bin/ls -l";
-	char **nwwenviron = __environ;
-	pid_t frk1, frkerr;
+	char **newenviron = __environ;
+	pid_t frk1, fork_err;
 	int err = 0, status, i, fd = 0;
 
 	argv[0] = strtok(input, " ");
@@ -36,26 +36,26 @@ int main(void)
 			perror("\nFailed to open file");
 		else
 		{
-			for (i = 0; nwwenviron[i]; i++)
+			for (i = 0; newenviron[i]; i++)
 			{
-				err = write(fd, nwwenviron[i], (sizeof(**nwwenviron) * strlen(nwwenviron[i])));
+				err = write(fd, newenviron[i], (sizeof(**newenviron) * strlen(newenviron[i])));
 				if (err == -1)
 				{
 					perror("\nFailed to write to file");
 					break;
 				}
 				else
-					write(fd, "\n", sizeof(**nwwenviron));
+					write(fd, "\n", sizeof(**newenviron));
 			}
 
 			err = close(fd);
 			if (err == -1)
 				perror("\nFailed to close file");
 			else
-				printf("File \"child_env.txt\" has been created and child enviroment variables saved.\n");
+				printf("File \"child_env.txt\" has been created and child environment variables saved.\n");
 		}
 
-		err = execve(argv[0], argv, nwwenviron);
+		err = execve(argv[0], argv, newenviron);
 		if (err == -1)
 		{
 			close(fd);
@@ -64,8 +64,8 @@ int main(void)
 	}
 	else
 	{
-		frkerr = wait(&status);
-		if (frkerr == -1)
+		fork_err = wait(&status);
+		if (fork_err == -1)
 			perror("\nWait error");
 
 		fd = creat("parent_env.txt", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -73,22 +73,22 @@ int main(void)
 			perror("\nFailed to open file");
 		else
 		{
-			for (i = 0; nwwenviron[i]; i++)
+			for (i = 0; newenviron[i]; i++)
 			{
-				err = write(fd, nwwenviron[i], (sizeof(**nwwenviron) * strlen(nwwenviron[i])));
+				err = write(fd, newenviron[i], (sizeof(**newenviron) * strlen(newenviron[i])));
 				if (err == -1)
 				{
 					perror("\nFailed to write to file");
 					break;
 				}
 				else
-					write(fd, "\n", sizeof(**nwwenviron));
+					write(fd, "\n", sizeof(**newenviron));
 			}
 			err = close(fd);
 			if (err == -1)
 				perror("\nFailed to close file");
 			else
-				printf("File \"parent_env.txt\" has been created and parent enviroment variables saved.\n");
+				printf("File \"parent_env.txt\" has been created and parent environment variables saved.\n");
 		}
 	}
 

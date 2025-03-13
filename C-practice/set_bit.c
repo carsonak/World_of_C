@@ -2,7 +2,7 @@
 
 unsigned int set_bit(unsigned int num, unsigned int bit);
 void print_binary(unsigned int num);
-void prt_bi(unsigned int num, int *spc);
+void print_bi(unsigned int num, int *spc);
 
 /**
  * set_bit - sets the value of a bit in an int at the given index
@@ -22,16 +22,16 @@ unsigned int set_bit(unsigned int num, unsigned int index)
 }
 
 /**
- * prt_bi - prints an int in binary and adds spacing for readability
+ * print_bi - prints an int in binary and adds spacing for readability
  * @num: unsigned int to be converted
  * @spc: address of the tracker for the spacing
  */
-void prt_bi(unsigned int num, int *spc)
+void print_bi(unsigned int num, int *spc)
 {
 	if (num == 0)
 		return;
 
-	prt_bi(num >> 1, spc);
+	print_bi(num >> 1, spc);
 
 	printf("%d", num & 1);
 	if (*spc % 4 == 0)
@@ -41,7 +41,7 @@ void prt_bi(unsigned int num, int *spc)
 }
 
 /**
- * print_binary - calls the helper function prt_bi to print in binary
+ * print_binary - calls the helper function print_bi to print in binary
  * @num: unsigned int to be printed
  */
 void print_binary(unsigned int num)
@@ -49,7 +49,7 @@ void print_binary(unsigned int num)
 	int spacer = 1;
 
 	if (num > 0)
-		prt_bi(num, &spacer);
+		print_bi(num, &spacer);
 	else
 		putchar('0');
 }

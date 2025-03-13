@@ -18,6 +18,8 @@ int main()
 	pid_t pid = 0;
 	const char *shm_name = "/my_shared_memory";
 	char *shared_memory = NULL;
+	const char strings[][20] = {"String1", "String2", "String3", "String4", "String5",
+								"String6", "String7", "String8", "String9", "String10"};
 
 	/*Create or open the shared memory segment*/
 	shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
@@ -49,44 +51,40 @@ int main()
 		perror("fork");
 		exit(EXIT_FAILURE);
 	}
-	else if (pid == 0)
-	{
-		const char *strings[] = {"String1", "String2", "String3", "String4", "String5",
-								 "String6", "String7", "String8", "String9", "String10"};
 
+	if (pid == 0)
+	{
 		/*Write strings to shared memory*/
-		for (i = 0; i < 10; ++i)
-			strcpy(shared_memory + i * 20, strings[i]); /*Assuming each string has a maximum length of 20*/
+		for (i = 0; i < sizeof(strings) / sizeof(*strings); ++i)
+			strcpy(shared_memory + i * sizeof(*strings), strings[i]);
 
 		exit(EXIT_SUCCESS);
 	}
-	else
+
+	/*Wait for the child process to complete*/
+	wait(NULL);
+	printf("Strings in shared memory:\n");
+	for (i = 0; i < sizeof(strings) / sizeof(*strings); ++i)
+		printf("%s\n", shared_memory + i * sizeof(*strings));
+
+	/*Unmap and close the shared memory segment*/
+	if (munmap(shared_memory, SHM_SIZE) == -1)
 	{
-		/*Wait for the child process to complete*/
-		wait(NULL);
-		printf("Strings in shared memory:\n");
-		for (i = 0; i < 10; ++i)
-			printf("%s\n", shared_memory + i * 20);
+		perror("munmap");
+		exit(EXIT_FAILURE);
+	}
 
-		/*Unmap and close the shared memory segment*/
-		if (munmap(shared_memory, SHM_SIZE) == -1)
-		{
-			perror("munmap");
-			exit(EXIT_FAILURE);
-		}
+	if (close(shm_fd) == -1)
+	{
+		perror("close");
+		exit(EXIT_FAILURE);
+	}
 
-		if (close(shm_fd) == -1)
-		{
-			perror("close");
-			exit(EXIT_FAILURE);
-		}
-
-		/*Unlink the shared memory segment (optional)*/
-		if (shm_unlink(shm_name) == -1)
-		{
-			perror("shm_unlink");
-			exit(EXIT_FAILURE);
-		}
+	/*Unlink the shared memory segment (optional)*/
+	if (shm_unlink(shm_name) == -1)
+	{
+		perror("shm_unlink");
+		exit(EXIT_FAILURE);
 	}
 
 	return (0);

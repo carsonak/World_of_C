@@ -8,14 +8,14 @@
  */
 int main(void)
 {
-	char *environ;
+	char *env_var;
 
-	environ = getenv("PATH");
-	printf("PATH : %s\n", environ);
-	environ = getenv("HOME");
-	printf("PATH : %s\n", environ);
-	environ = getenv("ROOT");
-	printf("PATH : %s\n", environ);
+	env_var = getenv("PATH");
+	printf("PATH : %s\n", env_var);
+	env_var = getenv("HOME");
+	printf("PATH : %s\n", env_var);
+	env_var = getenv("ROOT");
+	printf("PATH : %s\n", env_var);
 
 	return (0);
 }
