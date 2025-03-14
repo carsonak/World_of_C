@@ -1,1 +1,3 @@
 include ../Makefile
+
+CPPFLAGS := -E

@@ -19,9 +19,5 @@
 #define MAP1(f, x, peek, ...) f(x) MAP_NEXT(peek, MAP0)(f, peek, __VA_ARGS__)
 #define MAP(f, ...) EVAL(MAP1(f, __VA_ARGS__, (), 0))
 
-/*
- * Compile with `gcc -E example.c` to see the preprocessor output.
- */
-
 #define STRING(x) char const *x##_string = #x;
-MAP(STRING, foo, bar, baz)
+MAP(STRING, foo, bar, baz) /* -> EVAL(MAP1(f, __VA_ARGS__, (), 0)) */
