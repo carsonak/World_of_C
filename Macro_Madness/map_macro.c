@@ -1,23 +1,29 @@
 /* https://stackoverflow.com/a/13459454 */
 /* https://github.com/swansontec/map-macro */
-#define EVAL0(...) __VA_ARGS__
-#define EVAL1(...) EVAL0(EVAL0(EVAL0(__VA_ARGS__)))
-#define EVAL2(...) EVAL1(EVAL1(EVAL1(__VA_ARGS__)))
-#define EVAL3(...) EVAL2(EVAL2(EVAL2(__VA_ARGS__)))
-#define EVAL4(...) EVAL3(EVAL3(EVAL3(__VA_ARGS__)))
-#define EVAL(...) EVAL4(EVAL4(EVAL4(__VA_ARGS__)))
+/* Separates Macro name from parenthesis */
+#define BLANK
 
-#define MAP_END(...)
-#define MAP_OUT
+/*
+The macro body is only scanned once for macros and since `BLANK` is the
+only recognisable macro, B(x) is not evaluated and the recursion that results
+from it is not triggered.
+*/
+#define A(x) x B BLANK(x)
+#define B(x) x A BLANK(x)
 
-#define MAP_GET_END() 0, MAP_END
-#define MAP_NEXT0(test, next, ...) next MAP_OUT
-#define MAP_NEXT1(test, next) MAP_NEXT0(test, next, 0)
-#define MAP_NEXT(test, next) MAP_NEXT1(MAP_GET_END test, next)
+/*
+We can trigger another evaluation on the results of A(x) by passing the call as an
+argument to EVAL(x).
+*/
+#define EVAL(x) x
 
-#define MAP0(f, x, peek, ...) f(x) MAP_NEXT(peek, MAP1)(f, peek, __VA_ARGS__)
-#define MAP1(f, x, peek, ...) f(x) MAP_NEXT(peek, MAP0)(f, peek, __VA_ARGS__)
-#define MAP(f, ...) EVAL(MAP1(f, __VA_ARGS__, (), 0))
+#define E0(...) __VA_ARGS__
+#define E1(...) E0(__VA_ARGS__)
+#define E(...) E1(__VA_ARGS__)
 
-#define STRING(x) char const *x##_string = #x;
-MAP(STRING, foo, bar, baz) /* -> EVAL(MAP1(f, __VA_ARGS__, (), 0)) */
+A(blah)       /* blah B BLANK(blah) -> blah B (blah) */
+EVAL(A(blah)) /* EVAL(blah B BLANK(blah)) -> EVAL(blah B (blah)) -> blah B (blah) -> blah blah A BLANK(blah) -> blah blah A (blah) */
+/*                                                                                                   ^ This is the last evaluation as `A (blah)` now triggers the recursion check. */
+/* The more layers we wrap the call in, the more evaluations we get. */
+EVAL(EVAL(EVAL(EVAL(A(blah)))))
+E(A(blah))
